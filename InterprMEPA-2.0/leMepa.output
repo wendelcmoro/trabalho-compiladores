@@ -1,0 +1,709 @@
+Gramática
+
+    0 $accept: linhas $end
+
+    1 linhas: linhas linha
+    2       | linha
+
+    3 linha: rot comando
+
+    4 $@1: ε
+
+    5 rot: ROTULO $@1 DOIS_PONTOS
+    6    | ε
+
+    7 virgula: VIRGULA
+    8        | ε
+
+    9 comando: cmd_sem_param
+   10        | cmd_um_param_int param1_int
+   11        | cmd_um_param_rot param1_rot
+   12        | cmd_dois_param_int param1_int virgula param2_int
+   13        | CHPR param1_rot virgula param2_int
+   14        | DSVR param1_rot virgula param2_int virgula param3_int
+
+   15 cmd_sem_param: INPP
+   16              | PARA
+   17              | SOMA
+   18              | SUBT
+   19              | MULT
+   20              | DIVI
+   21              | INVR
+   22              | CONJ
+   23              | DISJ
+   24              | NEGA
+   25              | CMME
+   26              | CMMA
+   27              | CMIG
+   28              | CMDG
+   29              | CMEG
+   30              | CMAG
+   31              | NADA
+   32              | LEIT
+   33              | IMPR
+
+   34 cmd_um_param_int: CRCT
+   35                 | AMEM
+   36                 | DMEM
+   37                 | ENPR
+
+   38 cmd_um_param_rot: DSVS
+   39                 | DSVF
+
+   40 cmd_dois_param_int: CRVL
+   41                   | ARMZ
+   42                   | CRVI
+   43                   | ARMI
+   44                   | CREN
+   45                   | ENRT
+   46                   | RTPR
+
+   47 param1_int: INTEIRO
+
+   48 param2_int: INTEIRO
+
+   49 param3_int: INTEIRO
+
+   50 param1_rot: ROTULO
+
+
+Terminais, com as regras onde eles aparecem
+
+    $end (0) 0
+    error (256)
+    DOIS_PONTOS (258) 5
+    ROTULO (259) 5 50
+    INTEIRO (260) 47 48 49
+    VIRGULA (261) 7
+    INPP (262) 15
+    PARA (263) 16
+    SOMA (264) 17
+    SUBT (265) 18
+    MULT (266) 19
+    DIVI (267) 20
+    INVR (268) 21
+    CONJ (269) 22
+    DISJ (270) 23
+    NEGA (271) 24
+    CMME (272) 25
+    CMMA (273) 26
+    CMIG (274) 27
+    CMDG (275) 28
+    CMEG (276) 29
+    CMAG (277) 30
+    NADA (278) 31
+    LEIT (279) 32
+    IMPR (280) 33
+    CRCT (281) 34
+    AMEM (282) 35
+    DMEM (283) 36
+    ENPR (284) 37
+    ENRT (285) 45
+    DSVS (286) 38
+    DSVF (287) 39
+    CRVL (288) 40
+    ARMZ (289) 41
+    CRVI (290) 42
+    ARMI (291) 43
+    CREN (292) 44
+    CHPR (293) 13
+    RTPR (294) 46
+    DSVR (295) 14
+
+
+Não terminais com as regras onde eles aparecem
+
+    $accept (41)
+        à esquerda: 0
+    linhas (42)
+        à esquerda: 1 2
+        à direita: 0 1
+    linha (43)
+        à esquerda: 3
+        à direita: 1 2
+    rot (44)
+        à esquerda: 5 6
+        à direita: 3
+    $@1 (45)
+        à esquerda: 4
+        à direita: 5
+    virgula (46)
+        à esquerda: 7 8
+        à direita: 12 13 14
+    comando (47)
+        à esquerda: 9 10 11 12 13 14
+        à direita: 3
+    cmd_sem_param (48)
+        à esquerda: 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33
+        à direita: 9
+    cmd_um_param_int (49)
+        à esquerda: 34 35 36 37
+        à direita: 10
+    cmd_um_param_rot (50)
+        à esquerda: 38 39
+        à direita: 11
+    cmd_dois_param_int (51)
+        à esquerda: 40 41 42 43 44 45 46
+        à direita: 12
+    param1_int (52)
+        à esquerda: 47
+        à direita: 10 12
+    param2_int (53)
+        à esquerda: 48
+        à direita: 12 13 14
+    param3_int (54)
+        à esquerda: 49
+        à direita: 14
+    param1_rot (55)
+        à esquerda: 50
+        à direita: 11 13 14
+
+
+Estado 0
+
+    0 $accept: • linhas $end
+
+    ROTULO  deslocar, e ir ao estado 1
+
+    $padrão  reduzir usando a regra 6 (rot)
+
+    linhas  ir ao estado 2
+    linha   ir ao estado 3
+    rot     ir ao estado 4
+
+
+Estado 1
+
+    5 rot: ROTULO • $@1 DOIS_PONTOS
+
+    $padrão  reduzir usando a regra 4 ($@1)
+
+    $@1  ir ao estado 5
+
+
+Estado 2
+
+    0 $accept: linhas • $end
+    1 linhas: linhas • linha
+
+    $end    deslocar, e ir ao estado 6
+    ROTULO  deslocar, e ir ao estado 1
+
+    $padrão  reduzir usando a regra 6 (rot)
+
+    linha  ir ao estado 7
+    rot    ir ao estado 4
+
+
+Estado 3
+
+    2 linhas: linha •
+
+    $padrão  reduzir usando a regra 2 (linhas)
+
+
+Estado 4
+
+    3 linha: rot • comando
+
+    INPP  deslocar, e ir ao estado 8
+    PARA  deslocar, e ir ao estado 9
+    SOMA  deslocar, e ir ao estado 10
+    SUBT  deslocar, e ir ao estado 11
+    MULT  deslocar, e ir ao estado 12
+    DIVI  deslocar, e ir ao estado 13
+    INVR  deslocar, e ir ao estado 14
+    CONJ  deslocar, e ir ao estado 15
+    DISJ  deslocar, e ir ao estado 16
+    NEGA  deslocar, e ir ao estado 17
+    CMME  deslocar, e ir ao estado 18
+    CMMA  deslocar, e ir ao estado 19
+    CMIG  deslocar, e ir ao estado 20
+    CMDG  deslocar, e ir ao estado 21
+    CMEG  deslocar, e ir ao estado 22
+    CMAG  deslocar, e ir ao estado 23
+    NADA  deslocar, e ir ao estado 24
+    LEIT  deslocar, e ir ao estado 25
+    IMPR  deslocar, e ir ao estado 26
+    CRCT  deslocar, e ir ao estado 27
+    AMEM  deslocar, e ir ao estado 28
+    DMEM  deslocar, e ir ao estado 29
+    ENPR  deslocar, e ir ao estado 30
+    ENRT  deslocar, e ir ao estado 31
+    DSVS  deslocar, e ir ao estado 32
+    DSVF  deslocar, e ir ao estado 33
+    CRVL  deslocar, e ir ao estado 34
+    ARMZ  deslocar, e ir ao estado 35
+    CRVI  deslocar, e ir ao estado 36
+    ARMI  deslocar, e ir ao estado 37
+    CREN  deslocar, e ir ao estado 38
+    CHPR  deslocar, e ir ao estado 39
+    RTPR  deslocar, e ir ao estado 40
+    DSVR  deslocar, e ir ao estado 41
+
+    comando             ir ao estado 42
+    cmd_sem_param       ir ao estado 43
+    cmd_um_param_int    ir ao estado 44
+    cmd_um_param_rot    ir ao estado 45
+    cmd_dois_param_int  ir ao estado 46
+
+
+Estado 5
+
+    5 rot: ROTULO $@1 • DOIS_PONTOS
+
+    DOIS_PONTOS  deslocar, e ir ao estado 47
+
+
+Estado 6
+
+    0 $accept: linhas $end •
+
+    $padrão  aceitar
+
+
+Estado 7
+
+    1 linhas: linhas linha •
+
+    $padrão  reduzir usando a regra 1 (linhas)
+
+
+Estado 8
+
+   15 cmd_sem_param: INPP •
+
+    $padrão  reduzir usando a regra 15 (cmd_sem_param)
+
+
+Estado 9
+
+   16 cmd_sem_param: PARA •
+
+    $padrão  reduzir usando a regra 16 (cmd_sem_param)
+
+
+Estado 10
+
+   17 cmd_sem_param: SOMA •
+
+    $padrão  reduzir usando a regra 17 (cmd_sem_param)
+
+
+Estado 11
+
+   18 cmd_sem_param: SUBT •
+
+    $padrão  reduzir usando a regra 18 (cmd_sem_param)
+
+
+Estado 12
+
+   19 cmd_sem_param: MULT •
+
+    $padrão  reduzir usando a regra 19 (cmd_sem_param)
+
+
+Estado 13
+
+   20 cmd_sem_param: DIVI •
+
+    $padrão  reduzir usando a regra 20 (cmd_sem_param)
+
+
+Estado 14
+
+   21 cmd_sem_param: INVR •
+
+    $padrão  reduzir usando a regra 21 (cmd_sem_param)
+
+
+Estado 15
+
+   22 cmd_sem_param: CONJ •
+
+    $padrão  reduzir usando a regra 22 (cmd_sem_param)
+
+
+Estado 16
+
+   23 cmd_sem_param: DISJ •
+
+    $padrão  reduzir usando a regra 23 (cmd_sem_param)
+
+
+Estado 17
+
+   24 cmd_sem_param: NEGA •
+
+    $padrão  reduzir usando a regra 24 (cmd_sem_param)
+
+
+Estado 18
+
+   25 cmd_sem_param: CMME •
+
+    $padrão  reduzir usando a regra 25 (cmd_sem_param)
+
+
+Estado 19
+
+   26 cmd_sem_param: CMMA •
+
+    $padrão  reduzir usando a regra 26 (cmd_sem_param)
+
+
+Estado 20
+
+   27 cmd_sem_param: CMIG •
+
+    $padrão  reduzir usando a regra 27 (cmd_sem_param)
+
+
+Estado 21
+
+   28 cmd_sem_param: CMDG •
+
+    $padrão  reduzir usando a regra 28 (cmd_sem_param)
+
+
+Estado 22
+
+   29 cmd_sem_param: CMEG •
+
+    $padrão  reduzir usando a regra 29 (cmd_sem_param)
+
+
+Estado 23
+
+   30 cmd_sem_param: CMAG •
+
+    $padrão  reduzir usando a regra 30 (cmd_sem_param)
+
+
+Estado 24
+
+   31 cmd_sem_param: NADA •
+
+    $padrão  reduzir usando a regra 31 (cmd_sem_param)
+
+
+Estado 25
+
+   32 cmd_sem_param: LEIT •
+
+    $padrão  reduzir usando a regra 32 (cmd_sem_param)
+
+
+Estado 26
+
+   33 cmd_sem_param: IMPR •
+
+    $padrão  reduzir usando a regra 33 (cmd_sem_param)
+
+
+Estado 27
+
+   34 cmd_um_param_int: CRCT •
+
+    $padrão  reduzir usando a regra 34 (cmd_um_param_int)
+
+
+Estado 28
+
+   35 cmd_um_param_int: AMEM •
+
+    $padrão  reduzir usando a regra 35 (cmd_um_param_int)
+
+
+Estado 29
+
+   36 cmd_um_param_int: DMEM •
+
+    $padrão  reduzir usando a regra 36 (cmd_um_param_int)
+
+
+Estado 30
+
+   37 cmd_um_param_int: ENPR •
+
+    $padrão  reduzir usando a regra 37 (cmd_um_param_int)
+
+
+Estado 31
+
+   45 cmd_dois_param_int: ENRT •
+
+    $padrão  reduzir usando a regra 45 (cmd_dois_param_int)
+
+
+Estado 32
+
+   38 cmd_um_param_rot: DSVS •
+
+    $padrão  reduzir usando a regra 38 (cmd_um_param_rot)
+
+
+Estado 33
+
+   39 cmd_um_param_rot: DSVF •
+
+    $padrão  reduzir usando a regra 39 (cmd_um_param_rot)
+
+
+Estado 34
+
+   40 cmd_dois_param_int: CRVL •
+
+    $padrão  reduzir usando a regra 40 (cmd_dois_param_int)
+
+
+Estado 35
+
+   41 cmd_dois_param_int: ARMZ •
+
+    $padrão  reduzir usando a regra 41 (cmd_dois_param_int)
+
+
+Estado 36
+
+   42 cmd_dois_param_int: CRVI •
+
+    $padrão  reduzir usando a regra 42 (cmd_dois_param_int)
+
+
+Estado 37
+
+   43 cmd_dois_param_int: ARMI •
+
+    $padrão  reduzir usando a regra 43 (cmd_dois_param_int)
+
+
+Estado 38
+
+   44 cmd_dois_param_int: CREN •
+
+    $padrão  reduzir usando a regra 44 (cmd_dois_param_int)
+
+
+Estado 39
+
+   13 comando: CHPR • param1_rot virgula param2_int
+
+    ROTULO  deslocar, e ir ao estado 48
+
+    param1_rot  ir ao estado 49
+
+
+Estado 40
+
+   46 cmd_dois_param_int: RTPR •
+
+    $padrão  reduzir usando a regra 46 (cmd_dois_param_int)
+
+
+Estado 41
+
+   14 comando: DSVR • param1_rot virgula param2_int virgula param3_int
+
+    ROTULO  deslocar, e ir ao estado 48
+
+    param1_rot  ir ao estado 50
+
+
+Estado 42
+
+    3 linha: rot comando •
+
+    $padrão  reduzir usando a regra 3 (linha)
+
+
+Estado 43
+
+    9 comando: cmd_sem_param •
+
+    $padrão  reduzir usando a regra 9 (comando)
+
+
+Estado 44
+
+   10 comando: cmd_um_param_int • param1_int
+
+    INTEIRO  deslocar, e ir ao estado 51
+
+    param1_int  ir ao estado 52
+
+
+Estado 45
+
+   11 comando: cmd_um_param_rot • param1_rot
+
+    ROTULO  deslocar, e ir ao estado 48
+
+    param1_rot  ir ao estado 53
+
+
+Estado 46
+
+   12 comando: cmd_dois_param_int • param1_int virgula param2_int
+
+    INTEIRO  deslocar, e ir ao estado 51
+
+    param1_int  ir ao estado 54
+
+
+Estado 47
+
+    5 rot: ROTULO $@1 DOIS_PONTOS •
+
+    $padrão  reduzir usando a regra 5 (rot)
+
+
+Estado 48
+
+   50 param1_rot: ROTULO •
+
+    $padrão  reduzir usando a regra 50 (param1_rot)
+
+
+Estado 49
+
+   13 comando: CHPR param1_rot • virgula param2_int
+
+    VIRGULA  deslocar, e ir ao estado 55
+
+    $padrão  reduzir usando a regra 8 (virgula)
+
+    virgula  ir ao estado 56
+
+
+Estado 50
+
+   14 comando: DSVR param1_rot • virgula param2_int virgula param3_int
+
+    VIRGULA  deslocar, e ir ao estado 55
+
+    $padrão  reduzir usando a regra 8 (virgula)
+
+    virgula  ir ao estado 57
+
+
+Estado 51
+
+   47 param1_int: INTEIRO •
+
+    $padrão  reduzir usando a regra 47 (param1_int)
+
+
+Estado 52
+
+   10 comando: cmd_um_param_int param1_int •
+
+    $padrão  reduzir usando a regra 10 (comando)
+
+
+Estado 53
+
+   11 comando: cmd_um_param_rot param1_rot •
+
+    $padrão  reduzir usando a regra 11 (comando)
+
+
+Estado 54
+
+   12 comando: cmd_dois_param_int param1_int • virgula param2_int
+
+    VIRGULA  deslocar, e ir ao estado 55
+
+    $padrão  reduzir usando a regra 8 (virgula)
+
+    virgula  ir ao estado 58
+
+
+Estado 55
+
+    7 virgula: VIRGULA •
+
+    $padrão  reduzir usando a regra 7 (virgula)
+
+
+Estado 56
+
+   13 comando: CHPR param1_rot virgula • param2_int
+
+    INTEIRO  deslocar, e ir ao estado 59
+
+    param2_int  ir ao estado 60
+
+
+Estado 57
+
+   14 comando: DSVR param1_rot virgula • param2_int virgula param3_int
+
+    INTEIRO  deslocar, e ir ao estado 59
+
+    param2_int  ir ao estado 61
+
+
+Estado 58
+
+   12 comando: cmd_dois_param_int param1_int virgula • param2_int
+
+    INTEIRO  deslocar, e ir ao estado 59
+
+    param2_int  ir ao estado 62
+
+
+Estado 59
+
+   48 param2_int: INTEIRO •
+
+    $padrão  reduzir usando a regra 48 (param2_int)
+
+
+Estado 60
+
+   13 comando: CHPR param1_rot virgula param2_int •
+
+    $padrão  reduzir usando a regra 13 (comando)
+
+
+Estado 61
+
+   14 comando: DSVR param1_rot virgula param2_int • virgula param3_int
+
+    VIRGULA  deslocar, e ir ao estado 55
+
+    $padrão  reduzir usando a regra 8 (virgula)
+
+    virgula  ir ao estado 63
+
+
+Estado 62
+
+   12 comando: cmd_dois_param_int param1_int virgula param2_int •
+
+    $padrão  reduzir usando a regra 12 (comando)
+
+
+Estado 63
+
+   14 comando: DSVR param1_rot virgula param2_int virgula • param3_int
+
+    INTEIRO  deslocar, e ir ao estado 64
+
+    param3_int  ir ao estado 65
+
+
+Estado 64
+
+   49 param3_int: INTEIRO •
+
+    $padrão  reduzir usando a regra 49 (param3_int)
+
+
+Estado 65
+
+   14 comando: DSVR param1_rot virgula param2_int virgula param3_int •
+
+    $padrão  reduzir usando a regra 14 (comando)

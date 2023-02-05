@@ -18,6 +18,11 @@ enum variavel_tipos {
     BOOLEAN,
 } tipos;
 
+enum definition { 
+    SIMPLE_VARIABLE = 0,
+    IS_PROCEDURE,
+} definition;
+
 int num_vars = 0;
 int lex_level = 0;
 int offset = 0;
@@ -34,6 +39,7 @@ stack *varTypeStack;
 stack *assignVariables;
 stack *identTypes;
 stack *labels;
+stack *procedureLabels;
 
 int hasBoolExpression = 0;
 int hasIntExpression = 0;
@@ -46,6 +52,10 @@ int needWrite = 0;
 int needRead = 0;
 int ifExpression = 0;
 int whileExpression = 0;
+
+int haveProcedures = 0;
+
+int countProcedures = 0;
 
 %}
 
@@ -72,23 +82,81 @@ programa    :{
                 varTypeStack = declareStack();
                 assignVariables = declareStack();
                 labels = declareStack();
+                procedureLabels = declareStack();
              }
              PROGRAM IDENT
              ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA 
              bloco  PONTO {
-                if (tablePosition >= 0) {
-                    char output[64];
-                    sprintf(output,"DMEM %d",tablePosition + 1);
-                    geraCodigo (NULL, output);
-
-                    tablePosition = -1;
-                }
-
                 geraCodigo (NULL, "PARA");
              }
 ;
 
-bloco       : parte_declara_vars procedure comando_composto
+bloco       : parte_declara_vars procedures { 
+                {
+                    if (!haveProcedures) {
+                        // node *aux = malloc(sizeof(node));
+                        // aux->label = labelNumber;
+                        // push(procedureLabels, aux);
+                        // if (countProcedures == 0) {
+                        //     char output[64];
+                        //     char output2[64];
+                        //     sprintf(output2, "NADA");
+                        //     sprintf(output, "R00");
+                        //     geraCodigo (output, output2);
+
+                        //     labelNumber++;
+                        // }
+                        // else {
+                        //     char output[64];
+                        //     char output2[64];
+                        //     sprintf(output2, "NADA");
+                        //     if (labelNumber > 10) {
+                        //         sprintf(output, "R%d", labelNumber);
+                        //     }
+                        //     else {
+                        //         sprintf(output, "R0%d", labelNumber);
+                        //     }
+                        //     geraCodigo (output, output2);
+
+                        //     labelNumber++;
+                        // }
+                    }
+                }
+            }
+            comando_composto {
+                // printf ("\n\n\n\n\n nivel lexico %d \n\n\n\n\n", lex_level);
+                // printf ("\n\n\n\n\n %s \n\n\n\n\n", symbolsTable[3].symbol);
+                // printf ("\n\n\n\n\n position %d \n\n\n\n\n", tablePosition);
+                if (tablePosition >= 0) {
+                    int count = 0;
+                    int haveProcedure = 0;
+                    for (int i = tablePosition; i >= 0; i--) {
+                        if (symbolsTable[i].def == IS_PROCEDURE && symbolsTable[i].lex_level == lex_level) {
+                            haveProcedure = 1;
+                            break;
+                        }
+
+                        if (symbolsTable[i].def == SIMPLE_VARIABLE && symbolsTable[i].lex_level == lex_level) {
+                            //printf ("\n\n\n\n\n %s %d \n\n\n\n\n", symbolsTable[i].symbol, (lex_level == 0 ? lex_level : lex_level - 1));
+                            count++;
+                        }
+                    }
+                    char output[64];
+                    sprintf(output,"DMEM %d", count);
+                    geraCodigo (NULL, output);
+
+                    //printf ("\n\n\n\n\n haveprocedure %d \n\n\n\n\n", haveProcedure);
+
+                    if (haveProcedure) {
+                        tablePosition -= count;
+                    }
+                    else {
+                        tablePosition = -1;
+                    }
+                }
+
+                //printf ("\n\n\n\n\n position %d \n\n\n\n\n", tablePosition);
+            }
 ;
 
 parte_declara_vars:  var
@@ -149,11 +217,11 @@ tipo        : IDENT
 lista_id_var: lista_id_var VIRGULA IDENT
               { /* insere �ltima vars na tabela de s�mbolos */ 
 
-
                 tablePosition++;
                 strcpy(symbolsTable[tablePosition].symbol, token);
                 symbolsTable[tablePosition].lex_level = lex_level;
                 symbolsTable[tablePosition].offset = offset;
+                symbolsTable[tablePosition].def = SIMPLE_VARIABLE;
 
                 //printf("\n\n\n\naqui %s\n\n\n", symbolsTable[tablePosition].symbol);    
 
@@ -165,8 +233,9 @@ lista_id_var: lista_id_var VIRGULA IDENT
                 strcpy(symbolsTable[tablePosition].symbol, token);
                 symbolsTable[tablePosition].lex_level = lex_level;
                 symbolsTable[tablePosition].offset = offset;
+                symbolsTable[tablePosition].def = SIMPLE_VARIABLE;
 
-                //printf("\n\n\n\naqui %s\n\n\n", symbolsTable[tablePosition].symbol);    
+                //printf("\n\n\n\naqui %d\n\n\n", symbolsTable[tablePosition].lex_level);    
 
                 offset++;
                 num_vars++;
@@ -198,7 +267,7 @@ atribuicao:
 
                 if (index <= tablePosition) {
                     //printf("\n\n\n\n\nsimbolo encontrado na TS: %s\n\n\n\n\n\n\n", symbolsTable[index].symbol);
-                    sprintf(output,"ARMZ %d,%d", lex_level, symbolsTable[index].offset);
+                    sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     geraCodigo (NULL, output);
                 }
                 else {
@@ -227,7 +296,7 @@ atribuicao:
                 char output[64];
                 aux = aux->previous;
                 while (index <= tablePosition) {
-                    if (strcmp(symbolsTable[index].symbol, aux->symbol) == 0) {
+                    if (strcmp(symbolsTable[index].symbol, aux->symbol) == 0 && symbolsTable[index].lex_level <= lex_level) {
                         break;
                     }
 
@@ -235,7 +304,7 @@ atribuicao:
                 }
 
                 if (index <= tablePosition) {
-                    sprintf(output,"ARMZ %d,%d", lex_level, symbolsTable[index].offset);
+                    sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     geraCodigo (NULL, output);
                 }
                 else {
@@ -266,7 +335,7 @@ atribuicao:
                 }
 
                 int index = 0;
-                while(strcmp(symbolsTable[index].symbol, assignVariables->top->symbol) != 0 && index <= tablePosition) {
+                while(strcmp(symbolsTable[index].symbol, assignVariables->top->symbol) != 0 && symbolsTable[index].lex_level <= lex_level && index <= tablePosition) {
                     // if (index > tablePosition) {
                     //     break;
                     // }     
@@ -276,7 +345,7 @@ atribuicao:
                 char output[64];
                 if (index <= tablePosition) {
                     //printf("\n\n\n\n\nsimbolo encontrado na TS: %s\n\n\n\n\n\n\n", symbolsTable[index].symbol);
-                    sprintf(output,"ARMZ %d,%d", lex_level, symbolsTable[index].offset);
+                    sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     geraCodigo (NULL, output);
                 }
                 else {
@@ -307,7 +376,7 @@ variavel: IDENT
             int index = 0;
             char output[64];
             while (index <= tablePosition) {
-                if (strcmp(symbolsTable[index].symbol, token) == 0) {
+                if (strcmp(symbolsTable[index].symbol, token) == 0 && symbolsTable[index].lex_level <= lex_level) {
                     break;
                 }
                 
@@ -337,7 +406,7 @@ variavel: IDENT
 
                 index = 0;
                 while (index <= tablePosition) {
-                    if (strcmp(symbolsTable[index].symbol, aux->symbol) == 0) {
+                    if (strcmp(symbolsTable[index].symbol, aux->symbol) == 0 && symbolsTable[index].lex_level <= lex_level) {
                         // printf ("\n\n\n símbolo encontrado %s \n\n\n\n", aux->symbol);
                         // printf("\n\n\n hasbool %d\n\n\n\n", hasBoolExpression);
                         break;
@@ -351,7 +420,7 @@ variavel: IDENT
                     imprimeErro(output);
                 }
 
-                sprintf(output,"CRVL %d,%d", lex_level, symbolsTable[index].offset);
+                sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                 geraCodigo (NULL, output);
             }
 
@@ -617,7 +686,7 @@ while:  {
             assignDetected = 0;
             hasBoolExpression = 0;
             hasIntExpression = 0;
-            whileExpression = 0;
+            whileExpression = 1;
 
             if (labelNumber > 0) {
                 labelNumber++;
@@ -688,7 +757,7 @@ parametro: IDENT {
             int index = 0;
             char output[64];
             while (index <= tablePosition) {
-                if (strcmp(symbolsTable[index].symbol, token) == 0) {
+                if (strcmp(symbolsTable[index].symbol, token) == 0 && symbolsTable[index].lex_level <= lex_level) {
                     break;
                 }
                 
@@ -705,12 +774,12 @@ parametro: IDENT {
                 sprintf(output,"LEIT");
                 geraCodigo (NULL, output);
 
-                sprintf(output,"ARMZ %d,%d", lex_level, symbolsTable[index].offset);
+                sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                 geraCodigo (NULL, output);
             }
 
             if (needWrite) {
-                sprintf(output,"CRVL %d,%d", lex_level, symbolsTable[index].offset);
+                sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                 geraCodigo (NULL, output);
 
                 char output[64];
@@ -736,6 +805,7 @@ parametro: IDENT {
             }
         }
 ;
+
 parametros: parametro VIRGULA parametro
             | parametro 
 ;
@@ -847,9 +917,86 @@ else: ELSE comando
 if: if_then else
 ;
 
-
-procedure: PROCEDURE IDENT PONTO_E_VIRGULA bloco 
+procedures: procedures procedure
+            | procedure
             |
+;
+
+procedure: PROCEDURE IDENT {
+            /* Salva token do procedimento na tabela de símbolos */
+            tablePosition++;
+            lex_level++;
+            strcpy(symbolsTable[tablePosition].symbol, token);
+            symbolsTable[tablePosition].lex_level = lex_level;
+            symbolsTable[tablePosition].offset = offset;
+            symbolsTable[tablePosition].def = IS_PROCEDURE;
+
+            //printf("\n\n\n\naqui %s\n\n\n", token);    
+
+            offset = 0;
+            num_vars = 0;
+
+            /* --------------------------------------------- */
+
+            countProcedures++;
+
+            node *aux = malloc(sizeof(node));
+            aux->label = labelNumber;
+            push(procedureLabels, aux);
+
+            char output[64];            
+            if (labelNumber < 10) {
+                sprintf(output, "DSVS R0%d", labelNumber);
+            }
+            else {
+                sprintf(output, "DSVS R%d", labelNumber);
+            }
+            geraCodigo (NULL, output);
+            labelNumber++;
+
+            char output2[64];
+            sprintf(output2, "ENPR %d", lex_level);
+            if (labelNumber < 10) {
+                sprintf(output, "R0%d", labelNumber);
+            }
+            else {
+                sprintf(output, "R%d", labelNumber);
+            }
+            symbolsTable[tablePosition].label = labelNumber;
+            geraCodigo (output, output2);
+
+            labelNumber++;
+        } PONTO_E_VIRGULA bloco {
+            char output[64];
+            sprintf(output, "RTPR %d,%d", 0, lex_level);
+            geraCodigo (NULL, output);
+
+            labelNumber++;
+
+            haveProcedures = 1;
+            countProcedures--;
+
+            lex_level--;
+
+            char output2[64];
+
+
+            if (countElements(procedureLabels) > 0) {
+                node *aux = procedureLabels->top;
+            
+                if (aux->label > 10) {
+                    sprintf(output, "R%d", aux->label);
+                }
+                else {
+                    sprintf(output, "R0%d", aux->label);
+                }
+                geraCodigo (output, output2);
+                pop(procedureLabels);
+            }
+            // 
+
+            labelNumber++;
+        }
 ;
 comando: {
             assignDetected = 1;

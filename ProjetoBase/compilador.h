@@ -29,12 +29,17 @@ typedef enum simbolos {
     simb_then, simb_else
 } simbolos;
 
-
 typedef struct Symbol {
     char symbol[TAM_TOKEN];
     int type;
     int lex_level;
     int offset;
+
+    /* Variável simples| Procedimento | Função */
+    int def;
+
+    /* Rotulo */
+    int label;
 } Symbol;
 
 typedef struct identType {

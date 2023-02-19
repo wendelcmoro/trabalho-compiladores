@@ -29,17 +29,29 @@ typedef enum simbolos {
     simb_then, simb_else
 } simbolos;
 
+typedef struct Param {
+    int type;
+    int by_reference;
+} Param;
+
 typedef struct Symbol {
     char symbol[TAM_TOKEN];
     int type;
     int lex_level;
     int offset;
 
-    /* Variável simples| Procedimento | Função */
+    /* Variável simples| Procedimento | Parâmetro Formal | Função */
     int def;
+
+    /* Referência ou valor */
+    int by_reference;
 
     /* Rotulo */
     int label;
+
+    /* Em caso de procedimentos, utiliza um vetor de parâmetros  e uma contagem de parâmetros */
+    int total_params;
+    struct Param params[1024];
 } Symbol;
 
 typedef struct identType {

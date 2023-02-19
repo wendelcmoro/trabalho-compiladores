@@ -21,7 +21,13 @@ enum variavel_tipos {
 enum definition { 
     SIMPLE_VARIABLE = 0,
     IS_PROCEDURE,
+    FORMAL_PARAM,
 } definition;
+
+enum param_declaration { 
+    BY_VALUE = 0,
+    BY_REFERENCE,
+} param_declaration;
 
 int num_vars = 0;
 int lex_level = 0;
@@ -37,7 +43,7 @@ int tablePosition = -1;
 stack *auxStack;
 stack *varTypeStack;
 stack *assignVariables;
-stack *identTypes;
+//stack *identTypes;
 stack *labels;
 stack *procedureLabels;
 
@@ -53,11 +59,14 @@ int needRead = 0;
 int ifExpression = 0;
 int whileExpression = 0;
 
+/* Variáveis usadas para auxiliar nos procedimentos */
 int haveProcedures = 0;
-
 int countProcedures = 0;
-
 int procedureCall = 0;
+int passedByReference = 0;
+int procedureWithParams = 0;
+char lastProcSymbol[64];
+int countProcedureParams = 0;
 
 %}
 
@@ -85,6 +94,7 @@ programa    :{
                 assignVariables = declareStack();
                 labels = declareStack();
                 procedureLabels = declareStack();
+                lastProcSymbol[0] = '\0';
              }
              PROGRAM IDENT
              ABRE_PARENTESES lista_idents FECHA_PARENTESES PONTO_E_VIRGULA 
@@ -350,7 +360,7 @@ atribuicao: variavel ATRIBUICAO constante
                     pop(auxStack);
                 }
             }
-            | variavel
+            | chamada_subrotina
 ;
 
 variavel: IDENT 
@@ -361,7 +371,7 @@ variavel: IDENT
             // printf("\n\nassign detected %d", assignDetected);
             // printf("\nprocedure detected %d\n\n\n", procedureCall);
             
-            //printf("\n\nvariável %s detectada\n\n", token);
+            // printf("\n\nvariável %s detectada\n\n", token);
             node *aux = malloc(sizeof(node));
             strcpy(aux->symbol, token);
 
@@ -428,15 +438,19 @@ variavel: IDENT
                 geraCodigo (NULL, output);
             }
 
-            if (procedureCall) {
-                if (symbolsTable[index].label  < 10) {
-                    sprintf(output,"CHPR R0%d,%d", symbolsTable[index].label, lex_level);
-                }
-                else {
-                    sprintf(output,"CHPR R%d,%d", symbolsTable[index].label, lex_level);
-                }
-                geraCodigo (NULL, output);
+            if (procedureCall) { 
+                strcpy(lastProcSymbol, token);
             }
+
+            // if (procedureCall) {
+            //     if (symbolsTable[index].label  < 10) {
+            //         sprintf(output,"CHPR R0%d,%d", symbolsTable[index].label, lex_level);
+            //     }
+            //     else {
+            //         sprintf(output,"CHPR R%d,%d", symbolsTable[index].label, lex_level);
+            //     }
+            //     geraCodigo (NULL, output);
+            // }
 
             assignDetected = 0;
         }
@@ -742,15 +756,6 @@ lista_idents: lista_idents VIRGULA IDENT
             | IDENT
 ;
 
-comando_composto: T_BEGIN  comandos T_END
-;
-
-comandos: comandos comando PONTO_E_VIRGULA
-            | comandos comando
-            | comando PONTO_E_VIRGULA
-            | comando
-;
-
 while:  {
             assignDetected = 0;
             hasBoolExpression = 0;
@@ -875,7 +880,7 @@ parametro: IDENT {
         }
 ;
 
-parametros: parametro VIRGULA parametro
+parametros: parametros VIRGULA parametro
             | parametro 
 ;
 
@@ -923,7 +928,7 @@ if_then: IF {
         labelNumber++;
         ifExpression = 0; 
     } 
-    THEN comando {
+    THEN comando_ponto_e_virgula {
         char output[64];
         char output2[64];
         int aux1 = labels->top->label;
@@ -951,7 +956,7 @@ if_then: IF {
     }
 ;
 
-else: ELSE comando
+else: ELSE comando PONTO_E_VIRGULA
     {
         char output2[64];
         char output[64];        
@@ -989,11 +994,6 @@ else: ELSE comando
 if: if_then else
 ;
 
-procedures: procedures procedure
-            | procedure
-            |
-;
-
 procedure: PROCEDURE IDENT {
             char output[64];  
             char output2[64];
@@ -1019,6 +1019,7 @@ procedure: PROCEDURE IDENT {
             symbolsTable[tablePosition].lex_level = lex_level;
             symbolsTable[tablePosition].offset = offset;
             symbolsTable[tablePosition].def = IS_PROCEDURE;
+            symbolsTable[tablePosition].total_params = -1;
 
             //printf("\n\n\n\naqui %s\n\n\n", token);    
 
@@ -1054,7 +1055,7 @@ procedure: PROCEDURE IDENT {
             geraCodigo (output, output2);
 
             labelNumber++;
-        } PONTO_E_VIRGULA bloco {
+        } parametros_formais PONTO_E_VIRGULA bloco {
             char output[64];
             char output2[64];
 
@@ -1094,7 +1095,7 @@ procedure: PROCEDURE IDENT {
                     }
                 }
 
-                if (symbolsTable[i].def == SIMPLE_VARIABLE && symbolsTable[i].lex_level > lex_level) {
+                if ((symbolsTable[i].def == SIMPLE_VARIABLE || symbolsTable[i].def == FORMAL_PARAM) && symbolsTable[i].lex_level > lex_level) {
                     //printf ("\n\n\n\n\n %s %d \n\n\n\n\n", symbolsTable[i].symbol, (lex_level == 0 ? lex_level : lex_level - 1));
                     count++;
                 }
@@ -1103,8 +1104,183 @@ procedure: PROCEDURE IDENT {
             //printf ("\n\n\n\n\n haveprocedure %d \n\n\n\n\n", haveProcedure);
 
             tablePosition -= count;
-            
         }
+;
+
+parametro_procedimento: IDENT {
+                        char output[64];
+
+                        // Checa se símbolo já está declarado na tabela de símbolos
+                        for (int i = tablePosition; i >= 0; i--) {
+                            if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].lex_level == lex_level) {
+                                sprintf(output, "symbol '%s'  already declared as a parameters", token);
+                                imprimeErro(output);
+                            }
+
+                            if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && symbolsTable[i].lex_level <= lex_level) {
+                                sprintf(output, "symbol '%s'  already declared as a procedure", token);
+                                imprimeErro(output);
+                            }
+                        }
+                        tablePosition++;
+                        strcpy(symbolsTable[tablePosition].symbol, token);
+                        symbolsTable[tablePosition].lex_level = lex_level;
+                        // symbolsTable[tablePosition].offset = offset;
+                        symbolsTable[tablePosition].def = FORMAL_PARAM;
+                        symbolsTable[tablePosition].by_reference = passedByReference;
+
+                        //printf("\n\n\n\naqui %s\n\n\n", symbolsTable[tablePosition].symbol);    
+                    } DOIS_PONTOS IDENT {
+                        if (strcmp(token, "integer") == 0) {
+                            symbolsTable[tablePosition].type = INTEGER;
+                        }
+                        else if (strcmp(token, "boolean") == 0) {
+                            symbolsTable[tablePosition].type = BOOLEAN;
+                        }
+                       // printf("Parametro com passagem por referencia detectado\n");
+                    } 
+;
+
+parametros_procedimento: parametros_procedimento PONTO_E_VIRGULA parametro_procedimento
+                        | parametro_procedimento 
+;
+
+parametros_formais: ABRE_PARENTESES parametros_procedimento FECHA_PARENTESES {
+                        int procedureParamsOffset = -4;
+                        int countParams = 0;
+                        int procedureIndex = -1;
+
+                        for (int i = tablePosition; i >= 0; i--) {
+                            if (symbolsTable[i].def == IS_PROCEDURE) {
+                                procedureIndex = i;
+                                break;
+                            }
+                        }
+
+                        for (int i = tablePosition; i >= 0; i--) {
+                            if (symbolsTable[i].def == IS_PROCEDURE) {
+                                break;
+                            }
+
+                            if (symbolsTable[i].def == FORMAL_PARAM) {
+                                symbolsTable[i].offset = procedureParamsOffset;
+                                procedureParamsOffset--;
+
+                                // atualiza contagem de parametros no procedimento e o tipo do parametro até então
+                                symbolsTable[procedureIndex].total_params++;
+
+                                if (symbolsTable[i].type == INTEGER) {
+                                    symbolsTable[i].params[countParams].type = INTEGER;
+                                }
+                                else if (symbolsTable[i].type == BOOLEAN) {
+                                    symbolsTable[i].params[countParams].type = BOOLEAN;
+                                }
+                                
+                                symbolsTable[i].params[countParams].by_reference = symbolsTable[i].by_reference;
+                                
+                                countParams++;
+                            }
+                        }
+                    }
+                    | {
+                        //printf("Parametro com passagem por referencia não detectado\n");
+                    }
+;      
+
+procedures: procedures procedure
+            | procedure
+            |
+;
+
+parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao { countProcedureParams++; }
+                            | expressao { 
+                                countProcedureParams++;
+                            }
+;
+
+chamada_subrotina: variavel ABRE_PARENTESES {
+                        //printf ("\n\n\n teste1 %d \n\n\n", procedureCall);
+                        if (procedureCall) {
+                            procedureWithParams = 1;
+                        }
+                    } parametros_chamada_subrotina 
+                    FECHA_PARENTESES {      
+                        //printf ("\n\n\n teste123 %s \n\n\n", lastProcSymbol);   
+                        //printf ("\n\n\n teste123 %d \n\n\n", procedureWithParams);              
+                        if (procedureWithParams) {
+                            char  output[64];
+                            for (int i = tablePosition; i >= 0; i--) {
+                                if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
+                                    (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
+                                    
+                                    // Se número de parametros for diferente do esperado, retorna erro
+                                    //printf("\n\n teste 123 %d %d \n\n", symbolsTable[i].total_params + 1, countProcedureParams);
+                                    if (symbolsTable[i].total_params + 1 != countProcedureParams) {
+                                        sprintf(output, "number of params to procedure '%s' does not match, expected %d, found %d\n", symbolsTable[i].symbol, symbolsTable[i].total_params + 1, countProcedureParams);                                        
+                                        imprimeErro(output);
+                                    }
+
+                                    if (symbolsTable[i].label  < 10) {
+                                        sprintf(output,"CHPR R0%d,%d", symbolsTable[i].label, lex_level);
+                                    }
+                                    else {
+                                        sprintf(output,"CHPR R%d,%d", symbolsTable[i].label, lex_level);
+                                    }
+                                    geraCodigo (NULL, output);
+                                    break;
+                                }
+                            }
+
+                            lastProcSymbol[0] = '\0';
+
+                            //printf ("\n\n\n encontrou parametros %d \n\n\n", procedureWithParams);  
+                        }
+
+                        procedureWithParams = 0;
+                        countProcedureParams = 0;
+                }
+                | variavel {
+                    if (procedureCall) {
+                        char  output[64];
+                        for (int i = tablePosition; i >= 0; i--) {
+                            if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
+                                    (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
+                                
+                                // Se número de parametros for diferente do esperado, retorna erro
+                                //printf("\n\n teste 123 %d %d \n\n", symbolsTable[i].total_params + 1, countProcedureParams);
+                                if (symbolsTable[i].total_params + 1 != countProcedureParams) {
+                                    sprintf(output, "number of params to procedure '%s' does not match, expected %d, found %d\n", symbolsTable[i].symbol, symbolsTable[i].total_params + 1, countProcedureParams);
+                                    imprimeErro(output);
+                                }
+
+                                if (symbolsTable[i].label  < 10) {
+                                    sprintf(output,"CHPR R0%d,%d", symbolsTable[i].label, lex_level);
+                                }
+                                else {
+                                    sprintf(output,"CHPR R%d,%d", symbolsTable[i].label, lex_level);
+                                }
+                                geraCodigo (NULL, output);
+                                break;
+                            }
+                        }
+                    }
+                    procedureCall = 0;
+                    countProcedureParams = 0;
+                }
+;
+
+comando_composto: T_BEGIN  comandos T_END
+;
+
+comandos: comandos comando PONTO_E_VIRGULA
+        | comandos PONTO_E_VIRGULA comando 
+        | comandos comando 
+        | comando PONTO_E_VIRGULA
+        | comando
+;
+
+comando_ponto_e_virgula: comando PONTO_E_VIRGULA
+                        | comando
 ;
 
 comando: {

@@ -9,7 +9,7 @@ var x, y: integer;
             z:= y;
             y:=z*t;
     end
-
+    
     procedure k(t:integer);
     var z,l:integer;
         begin

@@ -387,8 +387,8 @@ variavel: IDENT
             int index = 0;
             char output[64];
 
-            printf("\n\nassign detected %d", assignDetected);
-            printf("\nprocedure detected %d %d\n\n\n", procedureCall, procedureWithParams);
+            // printf("\n\nassign detected %d", assignDetected);
+            // printf("\nprocedure detected %d %d\n\n\n", procedureCall, procedureWithParams);
             
             // printf("\n\nvariável %s detectada\n\n", token);
             node *aux = malloc(sizeof(node));
@@ -459,121 +459,70 @@ variavel: IDENT
                 }
 
                 int found = 0;
-                if (!procedureWithParams) {
-                    sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                int debug = 0;
+                if (!assignDetected && !procedureWithParams && !procedureCall){
+                    if (symbolsTable[index].by_reference == BY_VALUE){
+                        sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                    } else{
+                        sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                    }
                     geraCodigo (NULL, output);
-               }
+                    debug = 1;
+                }
 
-                printf("\n\n\n teste56 %s \n\n\n\n", lastProcSymbol);
+                // if (!assignDetected && !procedureWithParams && !procedureCall && symbolsTable[index].by_reference == BY_VALUE) {
+                //     sprintf(output,"testeCRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                //     geraCodigo (NULL, output);
+                //     debug = 1;
+                // }else if (!assignDetected && !procedureWithParams && !procedureCall && symbolsTable[index].by_reference == BY_REFERENCE){
+                //     sprintf(output,"testeCRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                //     geraCodigo (NULL, output);
+                //     debug = 1;
+                // }
+                
+
+                printf("\n\n\n simbolo aux %s\n\n\n\n", aux->symbol);
+                printf("\n\n\n assignDetcted dentro do detected? %d %d %d %s\n\n\n\n", assignDetected, procedureCall, procedureWithParams, token);
                 //if (symbolsTable[index].by_reference == BY_VALUE) {
-                    for (int i = tablePosition; i >= 0; i--) {
-                        if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && 
-                            (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
-                            
-                            //printf("\n\n\n %s passado por referencia? %d \n\n\n", symbolsTable[i].symbol, symbolsTable[i].params[countProcedureParams].by_reference);
+                    if (!debug) {
+                        for (int i = tablePosition; i >= 0; i--) {
+                            if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && 
+                                (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
+                                
+                                //printf("\n\n\n %s passado por referencia? %d \n\n\n", symbolsTable[i].symbol, symbolsTable[i].params[countProcedureParams].by_reference);
 
-                            if (symbolsTable[i].params[symbolsTable[i].total_params - countProcedureParams].by_reference == BY_VALUE) {
-                                for (int j = tablePosition; j >= 0; j--) {
-                                    if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
-                                        (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
-                                            if (symbolsTable[j].by_reference == BY_VALUE) {
-                                                sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                                                geraCodigo (NULL, output);
-                                                found = 1;
-                                                break;
+                                if (symbolsTable[i].params[symbolsTable[i].total_params - countProcedureParams].by_reference == BY_VALUE) {
+                                    for (int j = tablePosition; j >= 0; j--) {
+                                        if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
+                                            (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
+                                                if (symbolsTable[j].by_reference == BY_VALUE) {
+                                                    sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                                                    geraCodigo (NULL, output);
+                                                    found = 1;
+                                                    break;
+                                                }
+                                                else if (symbolsTable[j].by_reference == BY_REFERENCE) {
+                                                    sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                                                    geraCodigo (NULL, output);
+                                                    found = 1;
+                                                    break;
+                                                }
                                             }
-                                            else if (symbolsTable[j].by_reference == BY_REFERENCE) {
-                                                sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                                                geraCodigo (NULL, output);
-                                                found = 1;
-                                                break;
-                                            }
-                                        }
+                                    }
                                 }
+                                
                             }
-                            
-                        }
 
-                        if (found) {
-                            break;
+                            if (found) {
+                                break;
+                            }
                         }
                     }
-                    
-                    
-
-                    
-                    //sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                // }
-                // else {
-                    // for (int i = tablePosition; i >= 0; i--) {
-                    //     if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
-                    //         (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
-                            
-                    //         printf("\n\n\n %s passado por referencia? %s \n\n\n", lastProcSymbol, symbolsTable[index].symbol);
-
-                    //         if (symbolsTable[i].params[symbolsTable[i].total_params - countProcedureParams].by_reference == BY_VALUE) {
-                    //             sprintf(output,"CREN %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                    //             geraCodigo (NULL, output);
-                    //             found = 1;
-                    //             break;
-                    //         }
-                    //         else if (symbolsTable[i].params[symbolsTable[i].total_params - countProcedureParams].by_reference == BY_REFERENCE) {
-                    //             sprintf(output,"CREN %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                    //             geraCodigo (NULL, output);
-                    //             found = 1;
-                    //             break;
-                    //         }
-                            //     for (int j = tablePosition; j >= 0; j--) {
-                            //         if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
-                            //             (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
-                            //                 if (symbolsTable[j].by_reference == BY_VALUE) {
-                            //                     sprintf(output,"CREN %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                            //                     geraCodigo (NULL, output);
-                            //                     found = 1;
-                            //                     break;
-                            //                 }
-                            //                 else if (symbolsTable[j].by_reference == BY_REFERENCE) {
-                            //                     sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                            //                     geraCodigo (NULL, output);
-                            //                     found = 1;
-                            //                     break;
-                            //                 }
-                            //             }
-                            //     }
-                            //}
-                            
-                    //     }
-
-                    //     if (found) {
-                    //         break;
-                    //     }
-                    // }
-
-                    // sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                    // geraCodigo (NULL, output);
-                //}
-                //geraCodigo (NULL, output);
             }
-            // else {
-            //     if (!assignDetected && !procedureWithParams) {
-            //         sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-            //         geraCodigo (NULL, output);
-            //     }
-            // }
 
-            if (procedureCall && !assignDetected) { 
+            if (procedureCall) { 
                 strcpy(lastProcSymbol, token);
             }
-
-            // if (procedureCall) {
-            //     if (symbolsTable[index].label  < 10) {
-            //         sprintf(output,"CHPR R0%d,%d", symbolsTable[index].label, lex_level);
-            //     }
-            //     else {
-            //         sprintf(output,"CHPR R%d,%d", symbolsTable[index].label, lex_level);
-            //     }
-            //     geraCodigo (NULL, output);
-            // }
 
             assignDetected = 0;
         }
@@ -1562,8 +1511,7 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                             }
 ;
 
-chamada_subrotina: variavel 
-                    ABRE_PARENTESES {
+chamada_subrotina: variavel ABRE_PARENTESES {
                         //printf ("\n\n\n teste1 %d \n\n\n", procedureCall);
                         if (procedureCall) {
                             procedureWithParams = 1;

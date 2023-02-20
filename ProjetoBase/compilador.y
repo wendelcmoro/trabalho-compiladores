@@ -22,6 +22,7 @@ enum definition {
     SIMPLE_VARIABLE = 0,
     IS_PROCEDURE,
     FORMAL_PARAM,
+    IS_FUNCTION,
 } definition;
 
 enum param_declaration { 
@@ -115,7 +116,7 @@ bloco       : parte_declara_vars procedures
                     char output[64];
 
                     for (int i = tablePosition; i >= 0; i--) {
-                        if (symbolsTable[i].def == IS_PROCEDURE && symbolsTable[i].lex_level == lex_level) {
+                        if ((symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level == lex_level) {
                             haveProcedure = 1;
                             break;
                         }
@@ -212,7 +213,7 @@ lista_id_var: lista_id_var VIRGULA IDENT
                         imprimeErro(output);
                     }
 
-                    if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && symbolsTable[i].lex_level <= lex_level) {
+                    if (strcmp(token, symbolsTable[i].symbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level <= lex_level) {
                         sprintf(output, "symbol '%s'  already declared as a procedure", token);
                         imprimeErro(output);
                     }
@@ -386,8 +387,8 @@ variavel: IDENT
             int index = 0;
             char output[64];
 
-            // printf("\n\nassign detected %d", assignDetected);
-            // printf("\nprocedure detected %d\n\n\n", procedureCall);
+            printf("\n\nassign detected %d", assignDetected);
+            printf("\nprocedure detected %d %d\n\n\n", procedureCall, procedureWithParams);
             
             // printf("\n\nvariável %s detectada\n\n", token);
             node *aux = malloc(sizeof(node));
@@ -397,15 +398,15 @@ variavel: IDENT
 
             // busca o símbolo na tabela de símbolos para poder identificação            
             while (index <= tablePosition) {
-                if ((strcmp(symbolsTable[index].symbol, token) == 0 && symbolsTable[index].lex_level <= lex_level && symbolsTable[index].def != IS_PROCEDURE) 
-                    || (strcmp(symbolsTable[index].symbol, token) == 0 && symbolsTable[index].def == IS_PROCEDURE && symbolsTable[index].lex_level >= symbolsTable[index].lex_level)) {
+                if ((strcmp(symbolsTable[index].symbol, token) == 0 && symbolsTable[index].lex_level <= lex_level && symbolsTable[index].def != IS_PROCEDURE && symbolsTable[index].def != IS_FUNCTION) 
+                    || (strcmp(symbolsTable[index].symbol, token) == 0 && (symbolsTable[index].def == IS_PROCEDURE || symbolsTable[index].def == IS_FUNCTION) && symbolsTable[index].lex_level >= symbolsTable[index].lex_level)) {
                     break;
                 }
                 
                 index++;
             }
             if (index <= tablePosition) {                
-                if (symbolsTable[index].def == IS_PROCEDURE) {
+                if (symbolsTable[index].def == IS_PROCEDURE || symbolsTable[index].def == IS_FUNCTION) {
                     procedureCall = 1;
                 }
                 else {
@@ -417,7 +418,7 @@ variavel: IDENT
                 sprintf(output, "symbol not declared '%s' identified\n", aux->symbol);
                 imprimeErro(output);
             }
-            if (!procedureCall) {
+            if ((!procedureCall) || symbolsTable[index].def == IS_FUNCTION) {
                 push(auxStack, aux);
                 strcpy(last_ident.token, token);
             }
@@ -425,7 +426,12 @@ variavel: IDENT
                 free(aux);
             }
 
-            if (assignDetected && !procedureCall) {
+            if (!assignDetected && symbolsTable[index].def == IS_FUNCTION) {
+                sprintf(output,"AMEM 1");
+                geraCodigo (NULL, output);
+            }
+
+            if (assignDetected && (!procedureCall || symbolsTable[index].def == IS_FUNCTION)) {
                 node *aux2 = malloc(sizeof(node));
                 aux2->type = auxStack->top->type;
                 strcpy(aux2->symbol, auxStack->top->symbol);
@@ -458,9 +464,10 @@ variavel: IDENT
                     geraCodigo (NULL, output);
                }
 
+                printf("\n\n\n teste56 %s \n\n\n\n", lastProcSymbol);
                 //if (symbolsTable[index].by_reference == BY_VALUE) {
                     for (int i = tablePosition; i >= 0; i--) {
-                        if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
+                        if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && 
                             (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
                             
                             //printf("\n\n\n %s passado por referencia? %d \n\n\n", symbolsTable[i].symbol, symbolsTable[i].params[countProcedureParams].by_reference);
@@ -494,7 +501,7 @@ variavel: IDENT
                     
                     
 
-                    //printf("\n\n\n teste56 %s \n\n\n\n", lastProcSymbol);
+                    
                     //sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                 // }
                 // else {
@@ -554,7 +561,7 @@ variavel: IDENT
             //     }
             // }
 
-            if (procedureCall) { 
+            if (procedureCall && !assignDetected) { 
                 strcpy(lastProcSymbol, token);
             }
 
@@ -718,6 +725,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
             | expressao_parenteses
             | constante
             | variavel
+            | chamada_subrotina
 ;
 
 expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
@@ -877,11 +885,13 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                 | expressao_parenteses
                 | constante
                 | variavel
+                | chamada_subrotina
 ;
 
 expressao_parenteses: ABRE_PARENTESES expressao FECHA_PARENTESES
                 | constante
                 | variavel
+                | chamada_subrotina
 ;
 
 lista_idents: lista_idents VIRGULA IDENT
@@ -961,7 +971,7 @@ while:  {
 
 ;
 
-parametro: IDENT {
+parametro_leitura: IDENT {
             int index = 0;
             char output[64];
 
@@ -985,19 +995,7 @@ parametro: IDENT {
                 sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                 geraCodigo (NULL, output);
             }
-
-            if (needWrite) {
-                if (symbolsTable[index].by_reference == BY_VALUE) {
-                    sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                } else {
-                    sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
-                }
-                geraCodigo (NULL, output);
-
-                sprintf(output,"IMPR");
-                geraCodigo (NULL, output);
-            }
-        } 
+        }
         | NUMERO {
             char output[64];
 
@@ -1005,66 +1003,47 @@ parametro: IDENT {
                 sprintf(output, "Trying to read a constant value\n");
                 imprimeErro(output);
             }
-
-            if (needWrite) {
-                sprintf(output,"CRCT %s", token);
-                geraCodigo (NULL, output);
-
-                sprintf(output,"IMPR");
-                geraCodigo (NULL, output);
-            }
         }
 ;
 
-parametros: parametros VIRGULA parametro
-            | parametro 
+parametros_escrita:  parametros_escrita VIRGULA expressao {
+                char output[64];
+                if (needWrite) {
+                    sprintf(output,"IMPR");
+                    geraCodigo (NULL, output);
+                }
+            }
+            | expressao {
+                char output[64];
+                if (needWrite) {
+                    // if (symbolsTable[index].by_reference == BY_VALUE) {
+                    //     sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                    // } else {
+                    //     sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                    // }
+                    // geraCodigo (NULL, output);
+
+                    sprintf(output,"IMPR");
+                    geraCodigo (NULL, output);
+                }
+            }
 ;
 
 outros_comandos: READ {
                     needRead = 1;
                 } ABRE_PARENTESES 
-                parametros FECHA_PARENTESES  {
+                parametro_leitura FECHA_PARENTESES  {
                     needRead = 0;
                 }
                 | WRITE {
                     needWrite = 1;
                 } ABRE_PARENTESES 
-                parametros FECHA_PARENTESES {
+                parametros_escrita FECHA_PARENTESES {
                     needWrite = 0;
                 }
 ;
 
-if_then: IF {
-            ifExpression = 1;
-        } expressao {
-        hasBoolExpression = 0;
-        hasIntExpression = 0;
-        assignDetected = 0;
-
-        node *aux = malloc(sizeof(node));
-        char output[64];
-
-        aux->label = labelNumber;
-        push(labels, aux);
-
-        labelNumber++;
-        
-        if (labelNumber < 10) {
-            sprintf(output,"DSVF R0%d", labelNumber);
-        }
-        else {
-            sprintf(output,"DSVF R%d", labelNumber);
-        }
-        geraCodigo (NULL, output);    
-
-        aux = malloc(sizeof(node));
-        aux->label = labelNumber;
-        push(labels, aux);
-
-        labelNumber++;
-        ifExpression = 0; 
-    } 
-    THEN comando_ponto_e_virgula {
+then: THEN comando_ponto_e_virgula {
         char output[64];
         char output2[64];
         int aux1 = labels->top->label;
@@ -1087,8 +1066,32 @@ if_then: IF {
         else {
             sprintf(output,"R%d", aux1);
         }
-        geraCodigo (output, output2);
+        geraCodigo (output, output2);   
+    }
+    | THEN comando_composto {
+        char output[64];
+        char output2[64];
+        int aux1 = labels->top->label;
+
+        pop(labels);
+        node *aux = labels->top;
         
+        if (aux->label < 10) {
+            sprintf(output,"DSVS R0%d", aux->label);
+        }
+        else {
+            sprintf(output,"DSVS R%d", aux->label);
+        }
+        geraCodigo (NULL, output);
+
+        sprintf(output2,"NADA");
+        if (aux1 < 10) {
+            sprintf(output,"R0%d", aux1);
+        }
+        else {
+            sprintf(output,"R%d", aux1);
+        }
+        geraCodigo (output, output2);   
     }
 ;
 
@@ -1143,7 +1146,36 @@ else: ELSE comando PONTO_E_VIRGULA
     }
 ;
 
-if: if_then else
+if: IF {
+            ifExpression = 1;
+        } expressao {
+        hasBoolExpression = 0;
+        hasIntExpression = 0;
+        assignDetected = 0;
+
+        node *aux = malloc(sizeof(node));
+        char output[64];
+
+        aux->label = labelNumber;
+        push(labels, aux);
+
+        labelNumber++;
+        
+        if (labelNumber < 10) {
+            sprintf(output,"DSVF R0%d", labelNumber);
+        }
+        else {
+            sprintf(output,"DSVF R%d", labelNumber);
+        }
+        geraCodigo (NULL, output);    
+
+        aux = malloc(sizeof(node));
+        aux->label = labelNumber;
+        push(labels, aux);
+
+        labelNumber++;
+        ifExpression = 0; 
+    } then else
 ;
 
 parametro_procedimento: IDENT {
@@ -1156,7 +1188,7 @@ parametro_procedimento: IDENT {
                                 imprimeErro(output);
                             }
 
-                            if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && symbolsTable[i].lex_level <= lex_level) {
+                            if (strcmp(token, symbolsTable[i].symbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level <= lex_level) {
                                 sprintf(output, "symbol '%s'  already declared as a procedure", token);
                                 imprimeErro(output);
                             }
@@ -1190,7 +1222,7 @@ parametro_procedimento: IDENT {
                                 imprimeErro(output);
                             }
 
-                            if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && symbolsTable[i].lex_level <= lex_level) {
+                            if (strcmp(token, symbolsTable[i].symbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level <= lex_level) {
                                 sprintf(output, "symbol '%s'  already declared as a procedure", token);
                                 imprimeErro(output);
                             }
@@ -1225,14 +1257,14 @@ parametros_formais: ABRE_PARENTESES parametros_procedimento FECHA_PARENTESES {
                         int procedureIndex = -1;
 
                         for (int i = tablePosition; i >= 0; i--) {
-                            if (symbolsTable[i].def == IS_PROCEDURE) {
+                            if (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) {
                                 procedureIndex = i;
                                 break;
                             }
                         }
 
                         for (int i = tablePosition; i >= 0; i--) {
-                            if (symbolsTable[i].def == IS_PROCEDURE) {
+                            if (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) {
                                 break;
                             }
 
@@ -1261,8 +1293,18 @@ parametros_formais: ABRE_PARENTESES parametros_procedimento FECHA_PARENTESES {
                                 countParams++;
                             }
                         }
+
+                        if (symbolsTable[procedureIndex].def == IS_FUNCTION) {
+                            symbolsTable[procedureIndex].offset = procedureParamsOffset;
+                        }
                     }
                     | {
+                        for (int i = tablePosition; i >= 0; i--) {
+                            if (symbolsTable[i].def == IS_FUNCTION) {
+                                symbolsTable[i].offset = -4;
+                            }
+                            break;
+                        }
                         //printf("Parametro com passagem por referencia não detectado\n");
                     }
 ;  
@@ -1278,7 +1320,7 @@ procedure: PROCEDURE IDENT {
                     imprimeErro(output);
                 }
 
-                if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && symbolsTable[i].lex_level == lex_level + 1) {
+                if (strcmp(token, symbolsTable[i].symbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level == lex_level + 1) {
                     sprintf(output, "symbol '%s'  already declared as a procedure", token);
                     imprimeErro(output);
                 }
@@ -1387,11 +1429,15 @@ procedure: PROCEDURE IDENT {
         }
 ;
 
-procedures: procedures procedure PONTO_E_VIRGULA
-            | procedures PONTO_E_VIRGULA procedure 
-            | procedures procedure 
-            | procedure PONTO_E_VIRGULA
-            | procedure
+subrotina: procedure
+            | funcao
+;
+
+procedures: procedures subrotina PONTO_E_VIRGULA
+            | procedures PONTO_E_VIRGULA subrotina
+            | procedures subrotina 
+            | subrotina PONTO_E_VIRGULA
+            | subrotina
             |
 ;
 
@@ -1404,7 +1450,7 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                                 // printf("\n\n teste6 %d \n\n", countProcedureParams);
 
                                 for (int i = tablePosition; i >= 0; i--) {
-                                    if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
+                                    if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && 
                                         (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
                                         
                                         //printf("\n\n\n %s passado por referencia? %d \n\n\n", symbolsTable[i].symbol, symbolsTable[i].params[countProcedureParams].by_reference);
@@ -1462,7 +1508,7 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                                 // printf("\n\n teste6 %d \n\n", countProcedureParams);
 
                                 for (int i = tablePosition; i >= 0; i--) {
-                                    if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
+                                    if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && 
                                         (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
                                         
                                         // printf("\n\n\n %s passado por referencia? %d com indice %d com total de %d parametros\n\n\n", symbolsTable[i].symbol, symbolsTable[i].params[countProcedureParams].by_reference, countProcedureParams, symbolsTable[i].total_params + 1);
@@ -1529,7 +1575,7 @@ chamada_subrotina: variavel
                         if (procedureWithParams) {
                             char  output[64];
                             for (int i = tablePosition; i >= 0; i--) {
-                                if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
+                                if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && 
                                     (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
                                     
                                     // Se número de parametros for diferente do esperado, retorna erro
@@ -1562,7 +1608,7 @@ chamada_subrotina: variavel
                     if (procedureCall) {
                         char  output[64];
                         for (int i = tablePosition; i >= 0; i--) {
-                            if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && symbolsTable[i].def == IS_PROCEDURE && 
+                            if (strcmp(symbolsTable[i].symbol, lastProcSymbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && 
                                     (symbolsTable[i].lex_level <= lex_level || symbolsTable[i].lex_level == lex_level + 1)) {
                                 
                                 // Se número de parametros for diferente do esperado, retorna erro
@@ -1586,6 +1632,141 @@ chamada_subrotina: variavel
                     procedureCall = 0;
                     countProcedureParams = 0;
                 }
+;
+
+funcao: FUNCTION IDENT {
+            char output[64];  
+            char output2[64];
+                
+            // Checa se símbolo já está declarado na tabela de símbolos
+            for (int i = tablePosition; i >= 0; i--) {
+                if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].lex_level <= lex_level) {
+                    sprintf(output, "symbol '%s'  already declared", token);
+                    imprimeErro(output);
+                }
+
+                if (strcmp(token, symbolsTable[i].symbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level == lex_level + 1) {
+                    sprintf(output, "symbol '%s'  already declared as a procedure or function", token);
+                    imprimeErro(output);
+                }
+            }
+
+
+            /* Salva token do procedimento na tabela de símbolos */
+            tablePosition++;
+            lex_level++;
+            strcpy(symbolsTable[tablePosition].symbol, token);
+            symbolsTable[tablePosition].lex_level = lex_level;
+            symbolsTable[tablePosition].offset = offset;
+            symbolsTable[tablePosition].def = IS_FUNCTION;
+            symbolsTable[tablePosition].total_params = -1;
+
+            //printf("\n\n\n\naqui %s\n\n\n", token);    
+
+            offset = 0;
+            num_vars = 0;
+            
+            /* --------------------------------------------- */
+
+            node *aux = malloc(sizeof(node));
+
+            countProcedures++;
+            
+            aux->label = labelNumber;
+            push(procedureLabels, aux);
+                      
+            if (labelNumber < 10) {
+                sprintf(output, "DSVS R0%d", labelNumber);
+            }
+            else {
+                sprintf(output, "DSVS R%d", labelNumber);
+            }
+            geraCodigo (NULL, output);
+            labelNumber++;
+            
+            sprintf(output2, "ENPR %d", lex_level);
+            if (labelNumber < 10) {
+                sprintf(output, "R0%d", labelNumber);
+            }
+            else {
+                sprintf(output, "R%d", labelNumber);
+            }
+            symbolsTable[tablePosition].label = labelNumber;
+            geraCodigo (output, output2);
+
+            labelNumber++;
+        } parametros_formais DOIS_PONTOS IDENT {
+            // Identifica tipo da função
+            for (int i = tablePosition; i >= 0; i--) {
+                if (symbolsTable[i].def == IS_FUNCTION) {
+                    if (strcmp(token, "integer") == 0) {
+                        //printf("\n\n\n\naqui %s integer\n\n\n", symbolsTable[index].symbol);
+                        symbolsTable[i].type = INTEGER;
+                    }
+                    else if (strcmp(token, "boolean") == 0) {
+                        //printf("\n\n\n\naqui %s boolean\n\n\n", symbolsTable[index].symbol);
+                        symbolsTable[i].type = BOOLEAN;
+                    }
+                    break;
+                }
+            }
+        } PONTO_E_VIRGULA bloco {
+            char output[64];
+            char output2[64];
+            int count = 0;
+            int index = 0;
+
+            for (int i = tablePosition; i >= 0; i--) {
+                if (symbolsTable[i].def == IS_FUNCTION) {
+                    index = i;
+                    break;
+                }
+            }
+
+            sprintf(output, "RTPR %d,%d", lex_level, symbolsTable[index].total_params + 1);
+            geraCodigo (NULL, output);
+
+            labelNumber++;
+
+            haveProcedures = 1;
+            countProcedures--;
+
+            lex_level--;
+
+            sprintf(output2, "NADA");
+            if (countElements(procedureLabels) > 0) {
+                node *aux = procedureLabels->top;
+            
+                if (aux->label > 10) {
+                    sprintf(output, "R%d", aux->label);
+                }
+                else {
+                    sprintf(output, "R0%d", aux->label);
+                }
+                geraCodigo (output, output2);
+                pop(procedureLabels);
+            }
+
+            labelNumber++;
+
+            for (int i = tablePosition; i >= 0; i--) {
+                if (symbolsTable[i].def == IS_FUNCTION) {
+                    //printf ("\n\n\n\n\n %s %d \n\n\n\n\n", symbolsTable[i].symbol, symbolsTable[i].lex_level);
+                    if (symbolsTable[i].lex_level > lex_level + 1) {
+                        count++;
+                    }
+                }
+
+                if ((symbolsTable[i].def == SIMPLE_VARIABLE || symbolsTable[i].def == FORMAL_PARAM) && symbolsTable[i].lex_level > lex_level) {
+                    //printf ("\n\n\n\n\n %s %d \n\n\n\n\n", symbolsTable[i].symbol, (lex_level == 0 ? lex_level : lex_level - 1));
+                    count++;
+                }
+            }
+
+            //printf ("\n\n\n\n\n haveprocedure %d \n\n\n\n\n", haveProcedure);
+
+            tablePosition -= count;
+        }
 ;
 
 comando_composto: T_BEGIN  comandos T_END

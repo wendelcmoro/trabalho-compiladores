@@ -332,7 +332,7 @@ atribuicao: variavel ATRIBUICAO constante {
                         sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     else {
-                        sprintf(output,"testeARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     geraCodigo (NULL, output);
                 }

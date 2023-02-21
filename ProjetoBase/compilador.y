@@ -318,16 +318,21 @@ atribuicao: variavel ATRIBUICAO constante {
                         sprintf(output, "trying to assign NOT BOOLEAN value to variable '%s' of type BOOLEAN\n", assignVariables->top->symbol);
                         imprimeErro(output);
                 }
-                
-                while(strcmp(symbolsTable[index].symbol, assignVariables->top->symbol) != 0 && symbolsTable[index].lex_level <= lex_level && index <= tablePosition) {   
+
+                while (index >= 0) {
+                    if (strcmp(symbolsTable[index].symbol, assignVariables->top->symbol) == 0 && symbolsTable[index].lex_level <= lex_level) {
+                        break;
+                    }
+
                     index--;
                 }
+
                 if (index >= 0) {
                     if (symbolsTable[index].by_reference) {
                         sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     else {
-                        sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"testeARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     geraCodigo (NULL, output);
                 }

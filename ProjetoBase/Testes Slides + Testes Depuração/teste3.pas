@@ -5,6 +5,6 @@ begin
     a:=1;
     b:=10;
     c:=5;
-    a:=b+(a*(a+c))/d;
+    d:=b+(a*(a+c)) > a;
 end.
 

@@ -5,6 +5,6 @@ begin
     a:=1;
     b:=11;
     c:=b > 0;
-    c:=a + b div b > 0;
+    c:=c;
 end.
 

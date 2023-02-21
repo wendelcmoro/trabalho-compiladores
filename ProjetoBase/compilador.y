@@ -225,7 +225,7 @@ lista_id_var: lista_id_var VIRGULA IDENT {
 
 atribuicao: variavel ATRIBUICAO constante {
                 char output[64];
-                int index = 0;
+                int index = tablePosition;
 
                 if (assignVariables->top->type != auxStack->top->type) {
                     sprintf(output, "trying to assign value of different type to variable '%s'\n", assignVariables->top->symbol);
@@ -233,13 +233,13 @@ atribuicao: variavel ATRIBUICAO constante {
                 }
 
                 while(strcmp(symbolsTable[index].symbol, last_ident.token) != 0) {
-                    if (index > tablePosition) {
+                    if (index < 0) {
                         break;
                     }     
-                    index++;               
+                    index--;               
                 }
 
-                if (index <= tablePosition) {
+                if (index >= 0) {
                     if (symbolsTable[index].by_reference) {
                         sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
@@ -263,7 +263,7 @@ atribuicao: variavel ATRIBUICAO constante {
             }
             | variavel ATRIBUICAO variavel {
                 node *aux = auxStack->top;
-                int index = 0;
+                int index = tablePosition;
                 char output[64];
 
                 if (procedureCall) {
@@ -276,15 +276,15 @@ atribuicao: variavel ATRIBUICAO constante {
                     imprimeErro(output);
                 }
                 aux = aux->previous;
-                while (index <= tablePosition) {
+                while (index >= 0) {
                     if (strcmp(symbolsTable[index].symbol, aux->symbol) == 0 && symbolsTable[index].lex_level <= lex_level) {
                         break;
                     }
 
-                    index++;
+                    index--;
                 }
 
-                if (index <= tablePosition) {
+                if (index >= 0) {
                     if (symbolsTable[index].by_reference) {
                         sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
@@ -306,7 +306,7 @@ atribuicao: variavel ATRIBUICAO constante {
             }
             | variavel ATRIBUICAO expressao {
                 char output[64];
-                int index = 0;
+                int index = tablePosition;
 
                 if (hasBoolExpression) {
                     if (assignVariables->top->type != BOOLEAN) {
@@ -320,9 +320,9 @@ atribuicao: variavel ATRIBUICAO constante {
                 }
                 
                 while(strcmp(symbolsTable[index].symbol, assignVariables->top->symbol) != 0 && symbolsTable[index].lex_level <= lex_level && index <= tablePosition) {   
-                    index++;
+                    index--;
                 }
-                if (index <= tablePosition) {
+                if (index >= 0) {
                     if (symbolsTable[index].by_reference) {
                         sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }

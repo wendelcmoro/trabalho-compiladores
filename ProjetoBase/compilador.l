@@ -12,6 +12,13 @@
  *
  * ------------------------------------------------------------------- */
 
+/*
+Alunos:
+    Wendel Caio Moro GRR20182641
+    Bruno Augusto Luvizott GRR20180112
+    Atualizado em: [22/02/2022]
+*/
+
 %{
 
 

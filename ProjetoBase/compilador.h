@@ -11,6 +11,13 @@
  *
  * ------------------------------------------------------------------- */
 
+/*
+Alunos:
+    Wendel Caio Moro GRR20182641
+    Bruno Augusto Luvizott GRR20180112
+    Atualizado em: [22/02/2022]
+*/
+
 #define TAM_TOKEN 32
 
 
@@ -68,8 +75,8 @@ typedef struct identType {
 
 extern simbolos simbolo, relacao;
 extern char token[TAM_TOKEN];
-extern int nivel_lexico;
-extern int desloc;
+// extern int nivel_lexico;
+// extern int desloc;
 extern int nl;
 
 

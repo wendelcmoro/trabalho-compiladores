@@ -2,6 +2,12 @@
 // Testar se funciona corretamente o empilhamento de par�metros
 // passados por valor ou por refer�ncia.
 
+/*
+Alunos:
+    Wendel Caio Moro GRR20182641
+    Bruno Augusto Luvizott GRR20180112
+    Atualizado em: [22/02/2022]
+*/
 
 %{
 #include <stdio.h>
@@ -35,16 +41,13 @@ int lex_level = 0;
 int offset = 0;
 
 identType last_ident;
-char last_command[MAX_SYMBOL_SIZE];
 
 // symbols table represented as an array
 Symbol symbolsTable[255];
 int tablePosition = -1;
 
 stack *auxStack;
-stack *varTypeStack;
 stack *assignVariables;
-//stack *identTypes;
 stack *labels;
 stack *procedureLabels;
 
@@ -68,7 +71,6 @@ int procedureWithParams = 0;
 char lastProcSymbol[64];
 int countProcedureParams = 0;
 int composedExpression = 0;
-int needLoadVal = 0;
 int constantVal = 0;
 int passedByReference = 0;
 
@@ -412,20 +414,14 @@ variavel: IDENT {
                 imprimeErro(output);
             }
 
-            //if ((!procedureCall) || symbolsTable[index].def == IS_FUNCTION) {
-                push(auxStack, aux);
-                strcpy(last_ident.token, token);
-            //}
-            // else {
-            //     free(aux);
-            // }
+            push(auxStack, aux);
+            strcpy(last_ident.token, token);
 
             if (!assignDetected && symbolsTable[index].def == IS_FUNCTION) {
                 sprintf(output,"AMEM 1");
                 geraCodigo (NULL, output);
             }
             
-            //if (assignDetected && (!procedureCall || symbolsTable[index].def == IS_FUNCTION)) {
             if (assignDetected) {
                 node *aux2 = malloc(sizeof(node));
                 aux2->type = auxStack->top->type;
@@ -566,7 +562,6 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                     sprintf(output, "BOOLEAN values are not allowed to operate '=' with INTEGER values\n");
                     imprimeErro(output);
                 }
-                //pop(auxStack);
                 pop(auxStack);
             }
             | expressao_associativa DIFERENTE expressao_comutativa {
@@ -583,7 +578,6 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                     sprintf(output, "BOOLEAN values are not allowed to operate '!=' with INTEGER values\n");
                     imprimeErro(output);
                 }
-                //pop(auxStack);
                 pop(auxStack);
             }
             | expressao_associativa MAIOR expressao_comutativa {
@@ -600,7 +594,6 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                     sprintf(output, "BOOLEAN values are not allowed to operate '>' with INTEGER values\n");
                     imprimeErro(output);
                 }
-                //pop(auxStack);
                 pop(auxStack);
             }
             | expressao_associativa MENOR expressao_comutativa {
@@ -617,8 +610,6 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                     sprintf(output, "BOOLEAN values are not allowed to operate '<' with INTEGER values\n");
                     imprimeErro(output);
                 }
-
-                //pop(auxStack);
                 pop(auxStack);
             }
             | expressao_associativa MAIOR_IGUAL expressao_comutativa {
@@ -631,11 +622,10 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                 sprintf(output,"CMAG");
                 geraCodigo (NULL, output);
                 hasBoolExpression = 1;
-                 if ((auxStack->top->type != BOOLEAN && auxStack->top->previous->type == BOOLEAN) || (auxStack->top->type == BOOLEAN && auxStack->top->previous->type != BOOLEAN)) {
+                if ((auxStack->top->type != BOOLEAN && auxStack->top->previous->type == BOOLEAN) || (auxStack->top->type == BOOLEAN && auxStack->top->previous->type != BOOLEAN)) {
                     sprintf(output, "BOOLEAN values are not allowed to operate '>=' with INTEGER values\n");
                     imprimeErro(output);
                 }
-                //pop(auxStack);
                 pop(auxStack);
             }
             | expressao_associativa MENOR_IGUAL expressao_comutativa {
@@ -648,11 +638,10 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                 sprintf(output,"CMEG");
                 geraCodigo (NULL, output);
                 hasBoolExpression = 1;
-                 if ((auxStack->top->type != BOOLEAN && auxStack->top->previous->type == BOOLEAN) || (auxStack->top->type == BOOLEAN && auxStack->top->previous->type != BOOLEAN)) {
+                if ((auxStack->top->type != BOOLEAN && auxStack->top->previous->type == BOOLEAN) || (auxStack->top->type == BOOLEAN && auxStack->top->previous->type != BOOLEAN)) {
                     sprintf(output, "BOOLEAN values are not allowed to operate '<=' with INTEGER values\n");
                     imprimeErro(output);
                 }
-                //pop(auxStack);
                 pop(auxStack);
             }
             | expressao_associativa
@@ -677,7 +666,6 @@ expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
                             sprintf(output, "BOOLEAN values are not allowed to operate '+'\n");
                             imprimeErro(output);
                         }
-                        //pop(auxStack);   
                     }                                  
                     sprintf(output,"SOMA");
                     geraCodigo (NULL, output);
@@ -697,7 +685,6 @@ expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
                             sprintf(output, "BOOLEAN values are not allowed to operate '-'\n");
                             imprimeErro(output);
                         }
-                        //pop(auxStack);
                     }
                     sprintf(output,"SUBT");
                     geraCodigo (NULL, output);
@@ -719,8 +706,7 @@ expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
                                 sprintf(output, "INTEGER values are not allowed to operate 'or'\n");
                                 imprimeErro(output);
                             }
-                        }     
-                        //pop(auxStack);  
+                        }      
                     }             
                     sprintf(output,"DISJ");
                     geraCodigo (NULL, output);
@@ -741,8 +727,7 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                         if (auxStack->top->type == BOOLEAN || auxStack->top->previous->type == BOOLEAN) {
                             sprintf(output, "BOOLEAN values are not allowed to operate '*'\n");
                             imprimeErro(output);
-                        }     
-                        //pop(auxStack);     
+                        }         
                     }          
                     sprintf(output,"MULT");
                     geraCodigo (NULL, output);
@@ -762,7 +747,6 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                             sprintf(output, "BOOLEAN values are not allowed to operate '/'\n");
                             imprimeErro(output);
                         }
-                        //pop(auxStack);
                     }
                     sprintf(output,"DIVI");
                     geraCodigo (NULL, output);
@@ -780,7 +764,6 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                             sprintf(output, "BOOLEAN values are not allowed to operate 'div'\n");
                             imprimeErro(output);
                         }
-                        //pop(auxStack);
                     }
                     sprintf(output,"DIVI");
                     geraCodigo (NULL, output);
@@ -801,7 +784,6 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                                 imprimeErro(output);
                             }
                         }
-                         //pop(auxStack);
                     }
                     sprintf(output,"CONJ");
                     geraCodigo (NULL, output);
@@ -1196,28 +1178,7 @@ parametro_procedimento: {
                     | VAR { 
                         passedByReference = 1; 
                     }
-                    lista_id_parametro {
-                        // char output[64];
-
-                        // // Checa se símbolo já está declarado na tabela de símbolos
-                        // for (int i = tablePosition; i >= 0; i--) {
-                        //     if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].lex_level == lex_level) {
-                        //         sprintf(output, "symbol '%s'  already declared as a parameters", token);
-                        //         imprimeErro(output);
-                        //     }
-
-                        //     if (strcmp(token, symbolsTable[i].symbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level <= lex_level) {
-                        //         sprintf(output, "symbol '%s'  already declared as a procedure", token);
-                        //         imprimeErro(output);
-                        //     }
-                        // }
-                        // tablePosition++;
-                        // strcpy(symbolsTable[tablePosition].symbol, token);
-                        // symbolsTable[tablePosition].lex_level = lex_level;
-                        // symbolsTable[tablePosition].def = FORMAL_PARAM;
-                        // symbolsTable[tablePosition].by_reference = BY_REFERENCE;  
-
-                    } DOIS_PONTOS IDENT {
+                    lista_id_parametro DOIS_PONTOS IDENT {
                         if (strcmp(token, "integer") == 0) {
                             symbolsTable[tablePosition].type = INTEGER;
                         }
@@ -1447,20 +1408,6 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                                                     }
                                             }
                                         }
-                                        else {
-                                            if (composedExpression) {
-                                                for (int j = tablePosition; j >= 0; j--) {
-                                                    if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
-                                                        (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
-                                                        // if (symbolsTable[j].by_reference == BY_REFERENCE) {
-                                                        //     sprintf(output,"CRVL %d,%d",symbolsTable[j].lex_level, symbolsTable[j].offset);
-                                                        //     geraCodigo (NULL, output);
-                                                        //     break;
-                                                        // }
-                                                    }
-                                                }
-                                            }
-                                        }
                                         
                                     }
                                 }
@@ -1505,20 +1452,6 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                                                     }
                                             }
                                 
-                                        }
-                                        else {
-                                            if (composedExpression) {
-                                                for (int j = tablePosition; j >= 0; j--) {
-                                                    if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
-                                                        (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
-                                                        // if (symbolsTable[j].by_reference == BY_REFERENCE) {
-                                                        //     sprintf(output,"teste1CRVL %d,%d",symbolsTable[j].lex_level, symbolsTable[j].offset);
-                                                        //     geraCodigo (NULL, output);
-                                                        //     break;
-                                                        // }
-                                                    }
-                                                }
-                                            }
                                         }
                                     }
                                 }
@@ -1771,7 +1704,6 @@ int main (int argc, char** argv) {
     *  Inicia a Tabela de S�mbolos
     * ------------------------------------------------------------------- */
     auxStack = declareStack();
-    varTypeStack = declareStack();
     assignVariables = declareStack();
     labels = declareStack();
     procedureLabels = declareStack();

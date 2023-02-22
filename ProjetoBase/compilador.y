@@ -249,10 +249,10 @@ atribuicao: variavel ATRIBUICAO constante {
 
                 if (index >= 0) {
                     if (symbolsTable[index].by_reference) {
-                        sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"ARMI %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     else {
-                        sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"ARMZ %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     geraCodigo (NULL, output);
                 }
@@ -299,10 +299,10 @@ atribuicao: variavel ATRIBUICAO constante {
 
                 if (index >= 0) {
                     if (symbolsTable[index].by_reference) {
-                        sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"ARMI %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     else {
-                        sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"ARMZ %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     geraCodigo (NULL, output);
                 }
@@ -352,10 +352,10 @@ atribuicao: variavel ATRIBUICAO constante {
 
                 if (index >= 0) {
                     if (symbolsTable[index].by_reference) {
-                        sprintf(output,"ARMI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"ARMI %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     else {
-                        sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"ARMZ %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     geraCodigo (NULL, output);
                 }
@@ -457,9 +457,9 @@ variavel: IDENT {
                 int debug = 0;
                 if (!assignDetected && !procedureWithParams && !procedureCall){
                     if (symbolsTable[index].by_reference == BY_VALUE){
-                        sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"CRVL %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     } else{
-                        sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                        sprintf(output,"CRVI %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                     }
                     geraCodigo (NULL, output);
                     debug = 1;
@@ -475,13 +475,13 @@ variavel: IDENT {
                                     if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
                                         (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
                                             if (symbolsTable[j].by_reference == BY_VALUE) {
-                                                sprintf(output,"CRVL %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                                                sprintf(output,"CRVL %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                                                 geraCodigo (NULL, output);
                                                 found = 1;
                                                 break;
                                             }
                                             else if (symbolsTable[j].by_reference == BY_REFERENCE) {
-                                                sprintf(output,"CRVI %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                                                sprintf(output,"CRVI %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                                                 geraCodigo (NULL, output);
                                                 found = 1;
                                                 break;
@@ -904,7 +904,7 @@ parametro_leitura: IDENT {
                 sprintf(output,"LEIT");
                 geraCodigo (NULL, output);
 
-                sprintf(output,"ARMZ %d,%d", symbolsTable[index].lex_level, symbolsTable[index].offset);
+                sprintf(output,"ARMZ %d, %d", symbolsTable[index].lex_level, symbolsTable[index].offset);
                 geraCodigo (NULL, output);
             }
         }
@@ -1319,7 +1319,7 @@ procedure: PROCEDURE IDENT {
                 }
             }
 
-            sprintf(output, "RTPR %d,%d", lex_level, symbolsTable[index].total_params + 1);
+            sprintf(output, "RTPR %d, %d", lex_level, symbolsTable[index].total_params + 1);
             geraCodigo (NULL, output);
 
             labelNumber++;
@@ -1396,12 +1396,12 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                                                 if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
                                                     (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
                                                         if (symbolsTable[j].by_reference != BY_REFERENCE) {
-                                                            sprintf(output,"CREN %d,%d",symbolsTable[j].lex_level, symbolsTable[j].offset);
+                                                            sprintf(output,"CREN %d, %d",symbolsTable[j].lex_level, symbolsTable[j].offset);
                                                             geraCodigo (NULL, output);
                                                             break;
                                                         }
                                                         else {
-                                                            sprintf(output,"CRVL %d,%d",symbolsTable[j].lex_level, symbolsTable[j].offset);
+                                                            sprintf(output,"CRVL %d, %d",symbolsTable[j].lex_level, symbolsTable[j].offset);
                                                             geraCodigo (NULL, output);
                                                             break;
                                                         }
@@ -1440,12 +1440,12 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                                                 if (strcmp(aux->symbol, symbolsTable[j].symbol) == 0 && 
                                                     (symbolsTable[j].lex_level <= lex_level || symbolsTable[j].lex_level == lex_level + 1)) {
                                                         if (symbolsTable[j].by_reference != BY_REFERENCE) {
-                                                            sprintf(output,"CREN %d,%d",symbolsTable[j].lex_level, symbolsTable[j].offset);
+                                                            sprintf(output,"CREN %d, %d",symbolsTable[j].lex_level, symbolsTable[j].offset);
                                                             geraCodigo (NULL, output);
                                                             break;
                                                         }
                                                         else {
-                                                            sprintf(output,"CRVL %d,%d",symbolsTable[j].lex_level, symbolsTable[j].offset);
+                                                            sprintf(output,"CRVL %d, %d",symbolsTable[j].lex_level, symbolsTable[j].offset);
                                                             geraCodigo (NULL, output);
                                                             break;
                                                         }
@@ -1482,10 +1482,10 @@ chamada_subrotina: variavel ABRE_PARENTESES {
                                     }
 
                                     if (symbolsTable[i].label  < 10) {
-                                        sprintf(output,"CHPR R0%d,%d", symbolsTable[i].label, lex_level);
+                                        sprintf(output,"CHPR R0%d, %d", symbolsTable[i].label, lex_level);
                                     }
                                     else {
-                                        sprintf(output,"CHPR R%d,%d", symbolsTable[i].label, lex_level);
+                                        sprintf(output,"CHPR R%d, %d", symbolsTable[i].label, lex_level);
                                     }
                                     geraCodigo (NULL, output);
                                     break;
@@ -1512,10 +1512,10 @@ chamada_subrotina: variavel ABRE_PARENTESES {
                                 }
 
                                 if (symbolsTable[i].label  < 10) {
-                                    sprintf(output,"CHPR R0%d,%d", symbolsTable[i].label, lex_level);
+                                    sprintf(output,"CHPR R0%d, %d", symbolsTable[i].label, lex_level);
                                 }
                                 else {
-                                    sprintf(output,"CHPR R%d,%d", symbolsTable[i].label, lex_level);
+                                    sprintf(output,"CHPR R%d, %d", symbolsTable[i].label, lex_level);
                                 }
                                 geraCodigo (NULL, output);
                                 break;
@@ -1617,7 +1617,7 @@ funcao: FUNCTION IDENT {
                 }
             }
 
-            sprintf(output, "RTPR %d,%d", lex_level, symbolsTable[index].total_params + 1);
+            sprintf(output, "RTPR %d, %d", lex_level, symbolsTable[index].total_params + 1);
             geraCodigo (NULL, output);
 
             labelNumber++;

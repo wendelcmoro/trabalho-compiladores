@@ -530,7 +530,13 @@ char *yytext;
  * Tipos, protótipos e variáveis globais do compilador (via extern)
  *
  * ------------------------------------------------------------------- */
-#line 16 "compilador.l"
+/*
+Alunos:
+    Wendel Caio Moro GRR20182641
+    Bruno Augusto Luvizott GRR20180112
+    Atualizado em: [22/02/2022]
+*/
+#line 23 "compilador.l"
 
 
 #include<stdio.h>
@@ -544,8 +550,8 @@ char *yytext;
 
 int nl = 1;
 
-#line 547 "lex.yy.c"
-#line 548 "lex.yy.c"
+#line 553 "lex.yy.c"
+#line 554 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -762,10 +768,10 @@ YY_DECL
 		}
 
 	{
-#line 41 "compilador.l"
+#line 48 "compilador.l"
 
 
-#line 768 "lex.yy.c"
+#line 774 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -825,22 +831,22 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 43 "compilador.l"
+#line 50 "compilador.l"
 {nl++;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 45 "compilador.l"
+#line 52 "compilador.l"
 
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 47 "compilador.l"
+#line 54 "compilador.l"
 
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 49 "compilador.l"
+#line 56 "compilador.l"
 { simbolo  = simb_program;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("program ");
@@ -849,7 +855,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 55 "compilador.l"
+#line 62 "compilador.l"
 { simbolo = simb_var;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("var  ");
@@ -858,7 +864,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 61 "compilador.l"
+#line 68 "compilador.l"
 { simbolo = simb_array;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("array  ");
@@ -867,7 +873,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 67 "compilador.l"
+#line 74 "compilador.l"
 { simbolo = simb_procedure;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("procedure  ");
@@ -876,7 +882,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 73 "compilador.l"
+#line 80 "compilador.l"
 { simbolo = simb_function;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("function  ");
@@ -885,7 +891,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 79 "compilador.l"
+#line 86 "compilador.l"
 { simbolo = simb_while;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("while  ");
@@ -894,7 +900,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 85 "compilador.l"
+#line 92 "compilador.l"
 { simbolo = simb_if;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("if  ");
@@ -903,7 +909,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 91 "compilador.l"
+#line 98 "compilador.l"
 { simbolo = simb_begin;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("begin ");
@@ -912,7 +918,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 97 "compilador.l"
+#line 104 "compilador.l"
 { simbolo = simb_end;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("end  ");
@@ -921,7 +927,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 103 "compilador.l"
+#line 110 "compilador.l"
 { simbolo = simb_atribuicao;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" atribuicao  ");
@@ -930,7 +936,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 109 "compilador.l"
+#line 116 "compilador.l"
 { simbolo = simb_ponto_e_virgula;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" pt_virgula  ");
@@ -939,7 +945,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 115 "compilador.l"
+#line 122 "compilador.l"
 { simbolo = simb_dois_pontos;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" dois pontos ");
@@ -948,7 +954,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 121 "compilador.l"
+#line 128 "compilador.l"
 { simbolo = simb_virgula;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" virgula  ");
@@ -957,7 +963,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 128 "compilador.l"
+#line 135 "compilador.l"
 { simbolo = simb_ponto;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" ponto  ");
@@ -966,7 +972,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 134 "compilador.l"
+#line 141 "compilador.l"
 { simbolo = simb_abre_parenteses;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" abre_parenteses  ");
@@ -975,7 +981,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 140 "compilador.l"
+#line 147 "compilador.l"
 { simbolo = simb_fecha_parenteses;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" fecha_parenteses ");
@@ -984,7 +990,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 147 "compilador.l"
+#line 154 "compilador.l"
 { simbolo = simb_divisao_real;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_divisao_real ");
@@ -993,7 +999,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 153 "compilador.l"
+#line 160 "compilador.l"
 { simbolo = simb_divisao;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_divisao ");
@@ -1002,7 +1008,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 159 "compilador.l"
+#line 166 "compilador.l"
 { simbolo = simb_adicao;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_adicao ");
@@ -1011,7 +1017,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 165 "compilador.l"
+#line 172 "compilador.l"
 { simbolo = simb_subtracao;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_subtracao ");
@@ -1020,7 +1026,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 171 "compilador.l"
+#line 178 "compilador.l"
 { simbolo = simb_multiplicacao;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_multiplicacao ");
@@ -1029,7 +1035,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 177 "compilador.l"
+#line 184 "compilador.l"
 { simbolo = simb_mod;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_mod ");
@@ -1038,7 +1044,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 183 "compilador.l"
+#line 190 "compilador.l"
 { simbolo = simb_and;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_and ");
@@ -1047,7 +1053,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 189 "compilador.l"
+#line 196 "compilador.l"
 { simbolo = simb_or;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_or ");
@@ -1056,7 +1062,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 195 "compilador.l"
+#line 202 "compilador.l"
 { simbolo = simb_xor;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_xor ");
@@ -1065,7 +1071,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 201 "compilador.l"
+#line 208 "compilador.l"
 { simbolo = simb_igual;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_igual ");
@@ -1074,7 +1080,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 207 "compilador.l"
+#line 214 "compilador.l"
 { simbolo = simb_diferente;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_diferente ");
@@ -1083,7 +1089,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 213 "compilador.l"
+#line 220 "compilador.l"
 { simbolo = simb_maior;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_maior ");
@@ -1092,7 +1098,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 219 "compilador.l"
+#line 226 "compilador.l"
 { simbolo = simb_menor;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_menor ");
@@ -1101,7 +1107,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 225 "compilador.l"
+#line 232 "compilador.l"
 { simbolo = simb_maior_igual;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_maior_igual ");
@@ -1110,7 +1116,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 231 "compilador.l"
+#line 238 "compilador.l"
 { simbolo = simb_menor_igual;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_menor_igual ");
@@ -1119,7 +1125,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 237 "compilador.l"
+#line 244 "compilador.l"
 { simbolo = simb_in;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_in ");
@@ -1128,7 +1134,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 244 "compilador.l"
+#line 251 "compilador.l"
 { simbolo = simb_hash;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_hash ");
@@ -1137,7 +1143,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 250 "compilador.l"
+#line 257 "compilador.l"
 { simbolo = simb_aspa_simples;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_aspa_simples ");
@@ -1146,7 +1152,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 256 "compilador.l"
+#line 263 "compilador.l"
 { simbolo = simb_cifrao;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_cifrao ");
@@ -1155,7 +1161,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 262 "compilador.l"
+#line 269 "compilador.l"
 { simbolo = simb_intervalo;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_intervalo ");
@@ -1164,7 +1170,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 268 "compilador.l"
+#line 275 "compilador.l"
 { simbolo = simb_abre_colchetes;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_abre_colchetes ");
@@ -1173,7 +1179,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 274 "compilador.l"
+#line 281 "compilador.l"
 { simbolo = simb_fecha_colchetes;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_fecha_colchetes ");
@@ -1182,7 +1188,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 280 "compilador.l"
+#line 287 "compilador.l"
 { simbolo = simb_abre_chaves;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_abre_chaves ");
@@ -1191,7 +1197,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 286 "compilador.l"
+#line 293 "compilador.l"
 { simbolo = simb_fecha_chaves;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_fecha_chaves ");
@@ -1200,7 +1206,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 292 "compilador.l"
+#line 299 "compilador.l"
 { simbolo = simb_falso;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_falso ");
@@ -1209,7 +1215,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 298 "compilador.l"
+#line 305 "compilador.l"
 { simbolo = simb_verdadeiro;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_verdadeiro ");
@@ -1218,7 +1224,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 304 "compilador.l"
+#line 311 "compilador.l"
 { simbolo = simb_do;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_do ");
@@ -1227,7 +1233,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 310 "compilador.l"
+#line 317 "compilador.l"
 { simbolo = simb_read;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_read ");
@@ -1236,7 +1242,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 316 "compilador.l"
+#line 323 "compilador.l"
 { 
         simbolo = simb_write;
         strncpy (token, yytext, TAM_TOKEN);
@@ -1246,7 +1252,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 323 "compilador.l"
+#line 330 "compilador.l"
 { 
         simbolo = simb_then;
         strncpy (token, yytext, TAM_TOKEN);
@@ -1256,7 +1262,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 330 "compilador.l"
+#line 337 "compilador.l"
 { 
         simbolo = simb_else;
         strncpy (token, yytext, TAM_TOKEN);
@@ -1266,7 +1272,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 337 "compilador.l"
+#line 344 "compilador.l"
 {
         simbolo = simb_numero;
         strncpy (token, yytext, TAM_TOKEN);
@@ -1276,7 +1282,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 344 "compilador.l"
+#line 351 "compilador.l"
 { simbolo = simb_identificador;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" ident  ");
@@ -1285,10 +1291,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 350 "compilador.l"
+#line 357 "compilador.l"
 ECHO;
 	YY_BREAK
-#line 1291 "lex.yy.c"
+#line 1297 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2293,6 +2299,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 350 "compilador.l"
+#line 357 "compilador.l"
 
 

@@ -9,6 +9,8 @@ typedef struct Node {
     char symbol[MAX_SYMBOL_SIZE];
     int type;
     int label; // only for labels
+    int isFunction; // only for procedures
+    //int variable;
 } node;
 
 typedef struct Stack {

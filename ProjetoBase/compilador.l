@@ -347,5 +347,4 @@ else {
         return IDENT;
 }
 
-
 %%

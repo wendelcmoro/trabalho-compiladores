@@ -1285,7 +1285,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 351 "compilador.l"
+#line 350 "compilador.l"
 ECHO;
 	YY_BREAK
 #line 1291 "lex.yy.c"
@@ -2293,6 +2293,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 351 "compilador.l"
+#line 350 "compilador.l"
 
 

@@ -227,6 +227,11 @@ atribuicao: variavel ATRIBUICAO constante {
                 char output[64];
                 int index = tablePosition;
 
+                if (!assignVariables->top->isFunction) {
+                    sprintf(output, "cannot assign expressions to procedures\n");
+                    imprimeErro(output);
+                }
+
                 if (assignVariables->top->type != auxStack->top->type) {
                     sprintf(output, "trying to assign value of different type to variable '%s'\n", assignVariables->top->symbol);
                     imprimeErro(output);
@@ -265,6 +270,11 @@ atribuicao: variavel ATRIBUICAO constante {
                 node *aux = auxStack->top;
                 int index = tablePosition;
                 char output[64];
+
+                if (!assignVariables->top->isFunction) {
+                    sprintf(output, "cannot assign expressions to procedures\n");
+                    imprimeErro(output);
+                }
 
                 if (procedureCall) {
                     sprintf(output, "trying to assign procedure to variable '%s'\n", aux->symbol);
@@ -308,6 +318,16 @@ atribuicao: variavel ATRIBUICAO constante {
                 char output[64];
                 int index = tablePosition;
 
+                if (!assignVariables->top->isFunction) {
+                    sprintf(output, "cannot assign expressions to procedures\n");
+                    imprimeErro(output);
+                }
+
+                if (!auxStack->top->isFunction) {
+                    sprintf(output, "trying to assign procedure to variable '%s'\n", assignVariables->top->symbol);
+                    imprimeErro(output);
+                }
+                
                 if (hasBoolExpression) {
                     if (assignVariables->top->type != BOOLEAN) {
                         sprintf(output, "trying to assign BOOLEAN expression to variable '%s' of type INTEGER\n", assignVariables->top->symbol);
@@ -355,32 +375,33 @@ atribuicao: variavel ATRIBUICAO constante {
 
 variavel: IDENT {
             int index = tablePosition;
-            // printf("\n\n\n\n %d %s %d \n\n\n\n", index, token, lex_level);
-            // printf("\n\n\n\n %s \n\n\n\n", symbolsTable[index - 1].symbol);
             char output[64];
 
             node *aux = malloc(sizeof(node));
             strcpy(aux->symbol, token);
 
             // busca o símbolo na tabela de símbolos para poder identificação
-            //index = tablePosition;       
             while (index >= 0) {
                 if ((strcmp(symbolsTable[index].symbol, token) == 0 && symbolsTable[index].lex_level <= lex_level && symbolsTable[index].def != IS_PROCEDURE && symbolsTable[index].def != IS_FUNCTION) 
                     || (strcmp(symbolsTable[index].symbol, token) == 0 && (symbolsTable[index].def == IS_PROCEDURE || symbolsTable[index].def == IS_FUNCTION) && symbolsTable[index].lex_level >= symbolsTable[index].lex_level)) {
                     break;
                 }
                 
-                //printf ("\n\n\n\n%d\n\n\n\n", index);
                 index--;
             }
-
-            //printf ("\n\n\n\n aqui %d\n\n\n\n", symbolsTable[index].offset);
 
             if (index >= 0) {                
                 if (symbolsTable[index].def == IS_PROCEDURE || symbolsTable[index].def == IS_FUNCTION) {
                     procedureCall = 1;
+                    if (symbolsTable[index].def == IS_FUNCTION) {
+                        aux->isFunction = 1;
+                    }
+                    else {
+                        aux->isFunction = 0;
+                    }
                 }
                 else {
+                    aux->isFunction = 1;
                     procedureCall = 0;
                     aux->type = symbolsTable[index].type;
                 }
@@ -390,22 +411,29 @@ variavel: IDENT {
                 imprimeErro(output);
             }
 
-            if ((!procedureCall) || symbolsTable[index].def == IS_FUNCTION) {
+            //if ((!procedureCall) || symbolsTable[index].def == IS_FUNCTION) {
                 push(auxStack, aux);
                 strcpy(last_ident.token, token);
-            }
-            else {
-                free(aux);
-            }
+            //}
+            // else {
+            //     free(aux);
+            // }
 
             if (!assignDetected && symbolsTable[index].def == IS_FUNCTION) {
                 sprintf(output,"AMEM 1");
                 geraCodigo (NULL, output);
             }
-
-            if (assignDetected && (!procedureCall || symbolsTable[index].def == IS_FUNCTION)) {
+            
+            //if (assignDetected && (!procedureCall || symbolsTable[index].def == IS_FUNCTION)) {
+            if (assignDetected) {
                 node *aux2 = malloc(sizeof(node));
                 aux2->type = auxStack->top->type;
+                if (symbolsTable[index].def != IS_PROCEDURE) {
+                    aux2->isFunction = 1;
+                }
+                else {
+                    aux2->isFunction = 0;
+                }
                 strcpy(aux2->symbol, auxStack->top->symbol);
 
                 push(assignVariables, aux2);
@@ -489,6 +517,7 @@ constante:  NUMERO {
 
                 strcpy(aux->symbol, token);
                 aux->type = INTEGER;
+                aux->isFunction = 1;
                 push(auxStack, aux);
 
                 sprintf(output,"CRCT %s", token);
@@ -501,6 +530,7 @@ constante:  NUMERO {
 
                 strcpy(aux->symbol, token);
                 aux->type = BOOLEAN;
+                aux->isFunction = 1;
                 push(auxStack, aux);
 
                 sprintf(output,"CRCT %d", 0);
@@ -513,6 +543,7 @@ constante:  NUMERO {
 
                 strcpy(aux->symbol, token);
                 aux->type = BOOLEAN;
+                aux->isFunction = 1;
                 push(auxStack, aux);
 
                 sprintf(output,"CRCT %d", 1);
@@ -523,7 +554,7 @@ constante:  NUMERO {
 expressao: expressao_associativa IGUAL expressao_comutativa {
                 char output[64];
                 composedExpression = 1;
-                if (procedureCall) {
+                if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                     sprintf(output, "cannot operate '=' with procedures\n");
                     imprimeErro(output);
                 }
@@ -539,7 +570,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
             | expressao_associativa DIFERENTE expressao_comutativa {
                 char output[64];
                 composedExpression = 1;
-                if (procedureCall) {
+                if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                     sprintf(output, "cannot operate '<>' with procedures\n");
                     imprimeErro(output);
                 }
@@ -555,7 +586,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
             | expressao_associativa MAIOR expressao_comutativa {
                 char output[64];
                 composedExpression = 1;
-                if (procedureCall) {
+                if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                     sprintf(output, "cannot operate '>' with procedures\n");
                     imprimeErro(output);
                 }
@@ -572,7 +603,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
             | expressao_associativa MENOR expressao_comutativa {
                 char output[64];
                 composedExpression = 1;
-                if (procedureCall) {
+                if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                     sprintf(output, "cannot operate '<' with procedures\n");
                     imprimeErro(output);
                 }
@@ -590,7 +621,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
             | expressao_associativa MAIOR_IGUAL expressao_comutativa {
                 char output[64];
                 composedExpression = 1;
-                if (procedureCall) {
+                if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                     sprintf(output, "cannot operate '>=' with procedures\n");
                     imprimeErro(output);
                 }
@@ -607,7 +638,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
             | expressao_associativa MENOR_IGUAL expressao_comutativa {
                 char output[64];
                 composedExpression = 1;
-                if (procedureCall) {
+                if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                     sprintf(output, "cannot operate '<=' with procedures\n");
                     imprimeErro(output);
                 }
@@ -634,7 +665,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
 expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
                     char output[64];
                     composedExpression = 1;
-                    if (procedureCall) {
+                    if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                         sprintf(output, "cannot operate '+' with procedures\n");
                         imprimeErro(output);
                     }
@@ -654,7 +685,7 @@ expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
                     char output[64];
                     composedExpression = 1;
                     
-                    if (procedureCall) {
+                    if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                         sprintf(output, "cannot operate '-' with procedures\n");
                         imprimeErro(output);
                     }
@@ -675,7 +706,7 @@ expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
                     char output[64];
                     composedExpression = 1;
 
-                    if (procedureCall) {
+                    if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                         sprintf(output, "cannot operate OR' with procedures\n");
                         imprimeErro(output);
                     }
@@ -699,7 +730,7 @@ expressao_associativa: expressao_associativa ADICAO expressao_comutativa {
 expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                     char output[64];
                     composedExpression = 1;
-                    if (procedureCall) {
+                    if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                         sprintf(output, "cannot operate '*' with procedures\n");
                         imprimeErro(output);
                     }
@@ -719,7 +750,7 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                 | expressao_comutativa DIVISAO_REAL expressao_parenteses {
                     char output[64];
                     composedExpression = 1;
-                    if (procedureCall) {
+                    if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                         sprintf(output, "cannot operate '/' with procedures\n");
                         imprimeErro(output);
                     }
@@ -737,7 +768,7 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                 | expressao_comutativa DIVISAO expressao_parenteses {
                     char output[64];
                     composedExpression = 1;
-                    if (procedureCall) {
+                    if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                         sprintf(output, "cannot operate 'div' with procedures\n");
                         imprimeErro(output);
                     }
@@ -756,7 +787,7 @@ expressao_comutativa: expressao_comutativa MULTIPLICACAO expressao_parenteses {
                 | expressao_comutativa AND expressao_parenteses {
                     char output[64];
                     composedExpression = 1;
-                    if (procedureCall) {
+                    if (!auxStack->top->isFunction && !auxStack->top->previous->isFunction) {
                         sprintf(output, "cannot operate 'AND' with procedures\n");
                         imprimeErro(output);
                     }
@@ -1392,7 +1423,8 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
 
                                 countProcedureParams++;
                                 composedExpression = 0; 
-                                constantVal = 0;                               
+                                constantVal = 0;  
+                                pop(auxStack);                             
                             }
                             | expressao {
                                 char  output[64]; 
@@ -1450,6 +1482,7 @@ parametros_chamada_subrotina: parametros_chamada_subrotina VIRGULA expressao {
                                 countProcedureParams++;
                                 composedExpression = 0;
                                 constantVal = 0;
+                                pop(auxStack);
                             }
 ;
 

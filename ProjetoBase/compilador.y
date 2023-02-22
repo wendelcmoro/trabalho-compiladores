@@ -100,7 +100,7 @@ programa    :{
              }
 ;
 
-bloco       : parte_declara_vars procedures
+bloco       : parte_declara_vars subrotinas
             comando_composto {
                 if (tablePosition >= 0) {
                     int count = 0;
@@ -560,6 +560,7 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                 }
                 sprintf(output,"CMIG");
                 geraCodigo (NULL, output);
+                hasBoolExpression = 1;
                  if ((auxStack->top->type != BOOLEAN && auxStack->top->previous->type == BOOLEAN) || (auxStack->top->type == BOOLEAN && auxStack->top->previous->type != BOOLEAN)) {
                     sprintf(output, "BOOLEAN values are not allowed to operate '=' with INTEGER values\n");
                     imprimeErro(output);
@@ -576,7 +577,8 @@ expressao: expressao_associativa IGUAL expressao_comutativa {
                 }
                 sprintf(output,"CMDG");
                 geraCodigo (NULL, output);
-                 if ((auxStack->top->type != BOOLEAN && auxStack->top->previous->type == BOOLEAN) || (auxStack->top->type == BOOLEAN && auxStack->top->previous->type != BOOLEAN)) {
+                hasBoolExpression = 1;
+                if ((auxStack->top->type != BOOLEAN && auxStack->top->previous->type == BOOLEAN) || (auxStack->top->type == BOOLEAN && auxStack->top->previous->type != BOOLEAN)) {
                     sprintf(output, "BOOLEAN values are not allowed to operate '!=' with INTEGER values\n");
                     imprimeErro(output);
                 }
@@ -1360,9 +1362,9 @@ subrotina: procedure
             | funcao
 ;
 
-procedures: procedures subrotina PONTO_E_VIRGULA
-            | procedures PONTO_E_VIRGULA subrotina
-            | procedures subrotina 
+subrotinas: subrotinas subrotina PONTO_E_VIRGULA
+            | subrotinas PONTO_E_VIRGULA subrotina
+            | subrotinas subrotina 
             | subrotina PONTO_E_VIRGULA
             | subrotina
             |

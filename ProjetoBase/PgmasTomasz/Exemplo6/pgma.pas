@@ -1,11 +1,7 @@
 program exercicio1 (input, output);
 var t :  integer;
-    procedure l;
-   begin
-   end
-
-   function g(n : integer; r : integer; var k:integer):integer;
-   var t : integer;
+   function g(n,r : integer; var k:integer):integer;
+   var t : integer
       function f(i: integer):integer;
       var s,t : integer;
       begin (* f *)
@@ -25,12 +21,11 @@ var t :  integer;
       if n=0 then
          begin
             k:=0;
-            l;
-            g:=l > g(n-1,r,t) + 2*f(1)*2;
+            g:=g(n-1,r,t) + 2*f(1);
             k:=k+t;
          end
    end(* g *)
 
 begin(* principal *)
    write (g(2,5,t),t)
-end(* principal *).
+end(* principal *)

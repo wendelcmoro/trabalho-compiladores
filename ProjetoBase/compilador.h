@@ -34,6 +34,7 @@ typedef struct Param {
     int by_reference;
 } Param;
 
+// Elemento da tabela de símbolos
 typedef struct Symbol {
     char symbol[TAM_TOKEN];
     int type;

@@ -70,6 +70,7 @@ int countProcedureParams = 0;
 int composedExpression = 0;
 int needLoadVal = 0;
 int constantVal = 0;
+int passedByReference = 0;
 
 %}
 
@@ -1121,7 +1122,7 @@ if: IF {
     } then else
 ;
 
-parametro_procedimento: IDENT {
+lista_id_parametro: lista_id_parametro VIRGULA IDENT {
                         char output[64];
 
                         // Checa se símbolo já está declarado na tabela de símbolos
@@ -1140,27 +1141,21 @@ parametro_procedimento: IDENT {
                         strcpy(symbolsTable[tablePosition].symbol, token);
                         symbolsTable[tablePosition].lex_level = lex_level;
                         symbolsTable[tablePosition].def = FORMAL_PARAM;
-                        symbolsTable[tablePosition].by_reference = BY_VALUE;  
-                    } DOIS_PONTOS IDENT {
-                        if (strcmp(token, "integer") == 0) {
-                            symbolsTable[tablePosition].type = INTEGER;
-                        }
-                        else if (strcmp(token, "boolean") == 0) {
-                            symbolsTable[tablePosition].type = BOOLEAN;
+                        
+                        if (passedByReference) {
+                            symbolsTable[tablePosition].by_reference = BY_REFERENCE;  
                         }
                         else {
-                            char output[64];
-                            sprintf(output, "unidentified type '%s'", token);
-                            imprimeErro(output);
+                            symbolsTable[tablePosition].by_reference = BY_VALUE;
                         }
                     }
-                    | VAR IDENT {
+                    | IDENT {
                         char output[64];
 
                         // Checa se símbolo já está declarado na tabela de símbolos
                         for (int i = tablePosition; i >= 0; i--) {
                             if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].lex_level == lex_level) {
-                                sprintf(output, "symbol '%s'  already declared as a parameters", token);
+                                sprintf(output, "symbol '%s'  already declared as a parameter", token);
                                 imprimeErro(output);
                             }
 
@@ -1173,7 +1168,54 @@ parametro_procedimento: IDENT {
                         strcpy(symbolsTable[tablePosition].symbol, token);
                         symbolsTable[tablePosition].lex_level = lex_level;
                         symbolsTable[tablePosition].def = FORMAL_PARAM;
-                        symbolsTable[tablePosition].by_reference = BY_REFERENCE;  
+
+                        if (passedByReference) {
+                            symbolsTable[tablePosition].by_reference = BY_REFERENCE;  
+                        }
+                        else {
+                            symbolsTable[tablePosition].by_reference = BY_VALUE;
+                        }
+                    }
+;
+
+parametro_procedimento: { 
+                            passedByReference = 0;
+                    } lista_id_parametro DOIS_PONTOS IDENT {
+                        if (strcmp(token, "integer") == 0) {
+                            symbolsTable[tablePosition].type = INTEGER;
+                        }
+                        else if (strcmp(token, "boolean") == 0) {
+                            symbolsTable[tablePosition].type = BOOLEAN;
+                        }
+                        else {
+                            char output[64];
+                            sprintf(output, "unidentified type '%s'", token);
+                            imprimeErro(output);
+                        }
+                    }
+                    | VAR { 
+                        passedByReference = 1; 
+                    }
+                    lista_id_parametro {
+                        // char output[64];
+
+                        // // Checa se símbolo já está declarado na tabela de símbolos
+                        // for (int i = tablePosition; i >= 0; i--) {
+                        //     if (strcmp(token, symbolsTable[i].symbol) == 0 && symbolsTable[i].lex_level == lex_level) {
+                        //         sprintf(output, "symbol '%s'  already declared as a parameters", token);
+                        //         imprimeErro(output);
+                        //     }
+
+                        //     if (strcmp(token, symbolsTable[i].symbol) == 0 && (symbolsTable[i].def == IS_PROCEDURE || symbolsTable[i].def == IS_FUNCTION) && symbolsTable[i].lex_level <= lex_level) {
+                        //         sprintf(output, "symbol '%s'  already declared as a procedure", token);
+                        //         imprimeErro(output);
+                        //     }
+                        // }
+                        // tablePosition++;
+                        // strcpy(symbolsTable[tablePosition].symbol, token);
+                        // symbolsTable[tablePosition].lex_level = lex_level;
+                        // symbolsTable[tablePosition].def = FORMAL_PARAM;
+                        // symbolsTable[tablePosition].by_reference = BY_REFERENCE;  
 
                     } DOIS_PONTOS IDENT {
                         if (strcmp(token, "integer") == 0) {

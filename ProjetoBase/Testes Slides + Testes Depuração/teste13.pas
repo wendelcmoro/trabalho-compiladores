@@ -10,7 +10,7 @@ var m: integer;
                 end
             else
                 begin
-                    f:=f(n-1,k) + f(n-2,q);
+                    f:=f(n-1,p) + f(n-2,q);
                     k:=p+q+1;
                 end;
             write(n,k);

@@ -10,6 +10,7 @@ typedef struct Node {
     int type;
     int label; // only for labels
     int isFunction; // only for procedures
+    int checkParams;
     //int variable;
 } node;
 

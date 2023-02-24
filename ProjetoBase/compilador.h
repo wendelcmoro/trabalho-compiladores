@@ -15,7 +15,7 @@
 Alunos:
     Wendel Caio Moro GRR20182641
     Bruno Augusto Luvizott GRR20180112
-    Atualizado em: [22/02/2022]
+    Atualizado em: [23/02/2022]
 */
 
 #define TAM_TOKEN 32
@@ -33,7 +33,7 @@ typedef enum simbolos {
     simb_abre_colchetes, simb_fecha_colchetes, simb_abre_chaves,
     simb_fecha_chaves, simb_array, simb_procedure, simb_function, simb_while,
     simb_if, simb_igual, simb_falso, simb_verdadeiro, simb_do, simb_read, simb_write,
-    simb_then, simb_else
+    simb_then, simb_else, simb_forward
 } simbolos;
 
 typedef struct Param {
@@ -53,13 +53,19 @@ typedef struct Symbol {
 
     /* Referência ou valor */
     int by_reference;
+    int parameter_foward;
+    int paramIndex;
 
     /* Rotulo */
     int label;
-
     /* Em caso de procedimentos, utiliza um vetor de parâmetros  e uma contagem de parâmetros */
     int total_params;
     struct Param params[1024];
+
+    // Procedimento em caso de haver foward
+    int hasFoward;
+    int fowardedLabel;
+    int fowarded;
 } Symbol;
 
 typedef struct identType {

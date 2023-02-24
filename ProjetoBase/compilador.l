@@ -16,7 +16,7 @@
 Alunos:
     Wendel Caio Moro GRR20182641
     Bruno Augusto Luvizott GRR20180112
-    Atualizado em: [22/02/2022]
+    Atualizado em: [23/02/2022]
 */
 
 %{
@@ -39,7 +39,9 @@ pulo_linha [\n]
 
 descarte [\t ]+
 
-ident [a-zA-Z][a-zA-Z0-9]*
+program [p|P][r|R][o|O][g|G][r|R][a|A][m|M]
+
+ident [a-zA-Z0-9_]*
 
 numero [0-9]+
 
@@ -53,11 +55,11 @@ comentario "(*".*"*)"
 
 {comentario}
 
-program { simbolo  = simb_program;
+{program} { simbolo  = simb_program;
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME("program ");
         return PROGRAM;
- }
+}
 
 var { simbolo = simb_var;
         strncpy (token, yytext, TAM_TOKEN);
@@ -339,6 +341,20 @@ else {
         strncpy (token, yytext, TAM_TOKEN);
         IMPRIME(" simb_else ");
         return ELSE;
+}
+
+forward { 
+        simbolo = simb_forward;
+        strncpy (token, yytext, TAM_TOKEN);
+        IMPRIME(" simb_forward ");
+        return FORWARD;
+}
+
+writeln { 
+        simbolo = simb_write;
+        strncpy (token, yytext, TAM_TOKEN);
+        IMPRIME(" simb_write ");
+        return WRITE;
 }
 
 {numero} {

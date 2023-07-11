@@ -1,1 +1,6 @@
-.vscode
+*.o
+compilador
+compilador.output
+compilador.tab.c
+compilador.tab.h
+
